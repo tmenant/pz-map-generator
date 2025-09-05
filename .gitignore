@@ -1,0 +1,7 @@
+/ignore
+/obj
+/bin
+
+*.dll
+*.exe
+*.zip
