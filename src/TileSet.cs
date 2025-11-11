@@ -19,6 +19,15 @@ public class TileSet
                 Height = int.Parse(node.Attribute("height").Value),
             };
         }
+
+        public XElement ToXml()
+        {
+            return new XElement("image",
+                new XAttribute("source", Source),
+                new XAttribute("width", Width),
+                new XAttribute("height", Height)
+            );
+        }
     }
 
     public int Firstgid { get; set; }
@@ -41,5 +50,16 @@ public class TileSet
             Tileheight = int.Parse(node.Attribute("tileheight").Value),
             ImageSource = Image.Parse(node.Element("image")),
         };
+    }
+
+    public XElement ToXml()
+    {
+        return new XElement("tileset",
+            new XAttribute("firstgid", Firstgid),
+            new XAttribute("name", Name),
+            new XAttribute("tilewidth", Tilewidth),
+            new XAttribute("tileheight", Tileheight),
+            ImageSource.ToXml()
+        );
     }
 }

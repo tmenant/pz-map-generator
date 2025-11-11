@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -22,5 +20,17 @@ public class Layer
             Height = int.Parse(node.Attribute("height").Value),
             Datas = node.Value.Split(",").Select(int.Parse).ToArray(),
         };
+    }
+
+    public XElement ToXml()
+    {
+        var csvDatas = "\n" + string.Join(",", Datas.Select(value => value.ToString()));
+
+        return new XElement("layer",
+            new XAttribute("name", Name),
+            new XAttribute("width", Width),
+            new XAttribute("height", Height),
+            new XElement("data", new XAttribute("encoding", "csv"), csvDatas)
+        );
     }
 }

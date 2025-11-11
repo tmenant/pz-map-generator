@@ -1,24 +1,43 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 
 public class TmxFile()
 {
+    public string Version => MapNode.Attribute("version").Value;
+
+    public string Orientation => MapNode.Attribute("orientation").Value;
+
+    public int Width => int.Parse(MapNode.Attribute("width").Value);
+
+    public int Height => int.Parse(MapNode.Attribute("height").Value);
+
+    public int TileWidth => int.Parse(MapNode.Attribute("tilewidth").Value);
+
+    public int TileHeight => int.Parse(MapNode.Attribute("tileheight").Value);
+
     private readonly Dictionary<int, TileSet> TileSets = new();
 
     private readonly Dictionary<string, Layer> Layers = new();
 
     private readonly Dictionary<string, ObjectGroup> ObjectGroups = new();
 
+    private XElement MapNode;
+
+    private XElement BmpSettings;
+
     public static TmxFile Read(string path)
     {
-        var document = XDocument.Load(path);
         var tmxFile = new TmxFile();
+        var document = XDocument.Load(path);
 
+        tmxFile.MapNode = document.Root;
         tmxFile.ReadTilesets(document);
         tmxFile.ReadLayers(document);
         tmxFile.ReadObjectGroups(document);
+        tmxFile.BmpSettings = document.Descendants("bmp-settings").First();
 
         return tmxFile;
     }
@@ -61,4 +80,38 @@ public class TmxFile()
 
         Console.WriteLine($"{ObjectGroups.Count} objectgroups parsed.");
     }
+
+    public void Save(string path)
+    {
+        var document = new XDocument();
+
+        var mapNode = new XElement("map",
+            new XAttribute("version", Version),
+            new XAttribute("orientation", Orientation),
+            new XAttribute("width", Width),
+            new XAttribute("height", Height),
+            new XAttribute("tilewidth", TileWidth),
+            new XAttribute("tileheight", TileHeight)
+        );
+
+        foreach (var tileset in TileSets.Values)
+        {
+            mapNode.Add(tileset.ToXml());
+        }
+
+        foreach (var layer in Layers.Values)
+        {
+            mapNode.Add(layer.ToXml());
+        }
+
+        foreach (var objectGroup in ObjectGroups.Values)
+        {
+            mapNode.Add(objectGroup.ToXml());
+        }
+
+        mapNode.Add(BmpSettings);
+        document.Add(mapNode);
+        document.Save(path);
+    }
+
 }

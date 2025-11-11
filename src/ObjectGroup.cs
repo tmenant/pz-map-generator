@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Xml.Linq;
 
+
 public class ObjectGroup
 {
     public class Object
@@ -29,6 +30,18 @@ public class ObjectGroup
                 Height = int.Parse(node.Attribute("height").Value),
             };
         }
+
+        public XElement ToXml()
+        {
+            return new XElement("object",
+                new XAttribute("name", Name),
+                new XAttribute("type", Type),
+                new XAttribute("x", X),
+                new XAttribute("y", Y),
+                new XAttribute("width", Width),
+                new XAttribute("height", Height)
+            );
+        }
     }
 
     public string Name { get; set; }
@@ -48,5 +61,21 @@ public class ObjectGroup
             Height = int.Parse(node.Attribute("height").Value),
             Objects = node.Descendants("object").Select(Object.Parse).ToArray(),
         };
+    }
+
+    public XElement ToXml()
+    {
+        var element = new XElement("objectgroup",
+            new XAttribute("name", Name),
+            new XAttribute("width", Width),
+            new XAttribute("height", Height)
+        );
+
+        foreach (var obj in Objects)
+        {
+            element.Add(obj.ToXml());
+        }
+
+        return element;
     }
 }
