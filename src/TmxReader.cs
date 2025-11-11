@@ -1,22 +1,37 @@
+using System;
 using System.Collections.Generic;
-using System.Xml;
+using System.IO;
+using System.Xml.Linq;
 
 
-public class TmxReader(string _path)
+public class TmxReader(string path)
 {
-    public string Path { get; set; } = _path;
+    private readonly XDocument Document = XDocument.Load(path);
 
-    public readonly Dictionary<int, TileSet> TileSets = new();
+    private readonly Dictionary<int, TileSet> TileSets = new();
 
-    public readonly Dictionary<string, Layer> Layers = new();
+    private readonly Dictionary<string, Layer> Layers = new();
 
-    public readonly Dictionary<string, ObjectGroup> ObjectGroups = new();
+    private readonly Dictionary<string, ObjectGroup> ObjectGroups = new();
 
     public TmxReader Read()
     {
-        var document = new XmlDocument();
-        document.Load("ignore/Challenge1/tmx/0_0.tmx");
+        ReadTilesets();
 
         return this;
+    }
+
+    private void ReadTilesets()
+    {
+        var xmlTileSets = Document.Descendants("tileset");
+
+        foreach (var node in xmlTileSets)
+        {
+            var tileset = TileSet.Parse(node);
+
+            this.TileSets[tileset.Firstgid] = tileset;
+        }
+
+        Console.WriteLine($"{TileSets.Count} tilesets parsed.");
     }
 }
