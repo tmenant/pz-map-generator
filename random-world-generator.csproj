@@ -4,8 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>random_world_generator</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <nowarn>IDE0028;CA1050;IDE0290;IDE0003</nowarn>
   </PropertyGroup>
 
 </Project>
