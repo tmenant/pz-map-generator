@@ -1,30 +1,31 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Xml.Linq;
 
 
-public class TmxReader(string path)
+public class TmxFile()
 {
-    private readonly XDocument Document = XDocument.Load(path);
-
     private readonly Dictionary<int, TileSet> TileSets = new();
 
     private readonly Dictionary<string, Layer> Layers = new();
 
     private readonly Dictionary<string, ObjectGroup> ObjectGroups = new();
 
-    public TmxReader Read()
+    public static TmxFile Read(string path)
     {
-        ReadTilesets();
-        ReadLayers();
+        var document = XDocument.Load(path);
+        var tmxFile = new TmxFile();
 
-        return this;
+        tmxFile.ReadTilesets(document);
+        tmxFile.ReadLayers(document);
+        tmxFile.ReadObjectGroups(document);
+
+        return tmxFile;
     }
 
-    private void ReadTilesets()
+    private void ReadTilesets(XDocument document)
     {
-        var xmlTileSets = Document.Descendants("tileset");
+        var xmlTileSets = document.Descendants("tileset");
 
         foreach (var node in xmlTileSets)
         {
@@ -35,9 +36,9 @@ public class TmxReader(string path)
         Console.WriteLine($"{TileSets.Count} tilesets parsed.");
     }
 
-    public void ReadLayers()
+    public void ReadLayers(XDocument document)
     {
-        var xmlLayers = Document.Descendants("layer");
+        var xmlLayers = document.Descendants("layer");
 
         foreach (var node in xmlLayers)
         {
@@ -46,5 +47,18 @@ public class TmxReader(string path)
         }
 
         Console.WriteLine($"{Layers.Count} layers parsed.");
+    }
+
+    public void ReadObjectGroups(XDocument document)
+    {
+        var xmlObjectGroups = document.Descendants("objectgroup");
+
+        foreach (var node in xmlObjectGroups)
+        {
+            var objectGroup = ObjectGroup.Parse(node);
+            this.ObjectGroups[objectGroup.Name] = objectGroup;
+        }
+
+        Console.WriteLine($"{ObjectGroups.Count} objectgroups parsed.");
     }
 }

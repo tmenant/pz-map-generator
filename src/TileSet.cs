@@ -2,6 +2,25 @@ using System.Xml.Linq;
 
 public class TileSet
 {
+    public class Image
+    {
+        public string Source { get; set; }
+
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
+        public static Image Parse(XElement node)
+        {
+            return new Image()
+            {
+                Source = node.Attribute("source").Value,
+                Width = int.Parse(node.Attribute("width").Value),
+                Height = int.Parse(node.Attribute("height").Value),
+            };
+        }
+    }
+
     public int Firstgid { get; set; }
 
     public string Name { get; set; }
@@ -10,7 +29,7 @@ public class TileSet
 
     public int Tileheight { get; set; }
 
-    public SourceImage ImageSource { get; set; }
+    public Image ImageSource { get; set; }
 
     public static TileSet Parse(XElement node)
     {
@@ -20,7 +39,7 @@ public class TileSet
             Name = node.Attribute("name").Value,
             Tilewidth = int.Parse(node.Attribute("tilewidth").Value),
             Tileheight = int.Parse(node.Attribute("tileheight").Value),
-            ImageSource = SourceImage.Parse(node.Element("image")),
+            ImageSource = Image.Parse(node.Element("image")),
         };
     }
 }
