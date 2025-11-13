@@ -4,6 +4,11 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        LotheaderFile.Read("ignore/27_38.lotheader");
+    }
+
+    public static void ReadTmxFile()
+    {
         var txmFile = TmxFile.Read("ignore/Challenge1/tmx/0_0.tmx");
 
         txmFile.GetGID("0_FloorOverlay", 152, 163);
