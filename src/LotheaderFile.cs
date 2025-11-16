@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -193,6 +194,11 @@ public class Building
 
         return building;
     }
+
+    public Color SimpleColor()
+    {
+        return Utils.SimpleColor(GetHashCode());
+    }
 }
 
 
@@ -258,6 +264,11 @@ public class Room
                 Y = bytes.ReadInt32(ref position),
             };
         }
+    }
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this);
     }
 }
 

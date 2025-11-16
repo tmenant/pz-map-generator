@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 public class Program
@@ -13,9 +15,47 @@ public class Program
 
     public static void Main(string[] args)
     {
-        ReadAllPackFiles();
-        ReadAllMapFiles(pathB41);
-        ReadAllMapFiles(pathB42);
+        // ReadAllPackFiles();
+        // ReadAllMapFiles(pathB41);
+        // ReadAllMapFiles(pathB42);
+
+        ExportBuilding();
+    }
+
+    public static void ExportBuilding()
+    {
+        var header = LotheaderFile.Read($"ignore/B41Map/27_38.lotheader");
+        var pack = LotpackFile.Read("ignore/B41Map/world_27_38.lotpack", header);
+
+        // var building = header.Buildings[37];
+        // var room = header.Rooms[131];
+
+        using (var b = new Bitmap(300, 300))
+        {
+            using (var g = Graphics.FromImage(b))
+            {
+                g.Clear(Color.Black);
+
+                foreach (var building in header.Buildings)
+                {
+                    var pen = new Pen(building.SimpleColor());
+
+                    foreach (var roomId in building.RoomIds)
+                    {
+                        var room = header.Rooms[roomId];
+
+                        foreach (var rect in room.Rectangles)
+                        {
+                            g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+                        }
+                    }
+                }
+            }
+
+            b.Save("ignore/building.png", ImageFormat.Png);
+        }
+
+
     }
 
     public static void ReadAllPackFiles()
