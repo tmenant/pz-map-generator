@@ -30,32 +30,25 @@ public class Program
         // var building = header.Buildings[37];
         // var room = header.Rooms[131];
 
-        using (var b = new Bitmap(300, 300))
+        using (var drawing = new Drawing("ignore/building.png", 300, 300))
         {
-            using (var g = Graphics.FromImage(b))
+            drawing.Clear(Color.Black);
+
+            foreach (var building in header.Buildings)
             {
-                g.Clear(Color.Black);
+                var pen = new Pen(building.SimpleColor());
 
-                foreach (var building in header.Buildings)
+                foreach (var roomId in building.RoomIds)
                 {
-                    var pen = new Pen(building.SimpleColor());
+                    var room = header.Rooms[roomId];
 
-                    foreach (var roomId in building.RoomIds)
+                    foreach (var rect in room.Rectangles)
                     {
-                        var room = header.Rooms[roomId];
-
-                        foreach (var rect in room.Rectangles)
-                        {
-                            g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
-                        }
+                        drawing.DrawRectangle(pen, rect);
                     }
                 }
             }
-
-            b.Save("ignore/building.png", ImageFormat.Png);
         }
-
-
     }
 
     public static void ReadAllPackFiles()
