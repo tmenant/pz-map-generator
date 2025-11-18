@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 
 public class Program
@@ -15,11 +14,78 @@ public class Program
 
     public static void Main(string[] args)
     {
-        // ReadAllPackFiles();
-        // ReadAllMapFiles(pathB41);
-        // ReadAllMapFiles(pathB42);
+        // ExportBuilding();
 
-        ExportBuilding();
+        ReadAllMapFiles(pathB41);
+        ReadAllMapFiles(pathB42);
+
+        TestReadWriteAllMapFiles(pathB41);
+        TestReadWriteAllMapFiles(pathB42);
+
+        TestReadAllPackFiles();
+    }
+
+    public static void TestReadWriteAllMapFiles(string gamePath)
+    {
+        string mapPath = MapPath(gamePath);
+
+        var totalTimer = Utils.StartTimer();
+        var filesCount = 0;
+
+        for (int x = 0; x < 99; x++)
+        {
+            for (int y = 0; y < 99; y++)
+            {
+                string headerPath = $"{mapPath}/{x}_{y}.lotheader";
+                string lotpackPath = $"{mapPath}/world_{x}_{y}.lotpack";
+
+                if (!Path.Exists(headerPath))
+                    continue;
+
+                Console.WriteLine(Path.GetFileName(headerPath));
+
+                TestReadWriteLotheader(headerPath);
+
+                filesCount++;
+            }
+        }
+
+        Console.WriteLine($"{filesCount} read in {totalTimer.ElapsedMilliseconds / 1000:F3}s (average = {totalTimer.ElapsedMilliseconds / filesCount}ms / file)");
+    }
+
+    public static void TestReadWriteLotheader(string path)
+    {
+        var bytes = File.ReadAllBytes(path);
+        var header = LotheaderFile.Read(bytes);
+        var buffer = new MemoryStream();
+
+        header.Save(buffer);
+
+        var bytesAfter = buffer.ToArray();
+
+        if (bytes.Length != bytesAfter.Length)
+            throw new Exception($"Different length: {bytes.Length} / {bytesAfter.Length}");
+
+        var md5_before = Utils.HashMd5(bytes);
+        var md5_after = Utils.HashMd5(buffer.ToArray());
+
+        if (md5_before != md5_after)
+            throw new Exception($"Different hash: {md5_before} / {md5_after}");
+
+        // Console.WriteLine($"{bytes.Length} / {bytesAfter.Length}");
+        // Console.WriteLine($"{md5_before}");
+        // Console.WriteLine($"{md5_after}");
+
+        // for (int i = 0; i < bytes.Length; i++)
+        // {
+        //     var before = bytes[i];
+        //     var after = bytesAfter[i];
+
+        //     if (before != after)
+        //     {
+        //         Console.WriteLine($"{i} ({before}, {after})");
+        //     }
+        // }
     }
 
     public static void ExportBuilding()
@@ -36,7 +102,7 @@ public class Program
 
             foreach (var building in header.Buildings)
             {
-                var pen = new Pen(building.SimpleColor());
+                var pen = new Pen(building.GetColor());
 
                 foreach (var roomId in building.RoomIds)
                 {
@@ -51,7 +117,7 @@ public class Program
         }
     }
 
-    public static void ReadAllPackFiles()
+    public static void TestReadAllPackFiles()
     {
         var packFiles = Directory.GetFiles(texturePacks);
 

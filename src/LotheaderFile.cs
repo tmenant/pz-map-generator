@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -34,8 +35,14 @@ public class LotheaderFile
 
     public static LotheaderFile Read(string path)
     {
-        var header = new LotheaderFile();
         var bytes = File.ReadAllBytes(path);
+
+        return Read(bytes);
+    }
+
+    public static LotheaderFile Read(byte[] bytes)
+    {
+        var header = new LotheaderFile();
         var position = 0;
 
         header.ReadVersion(bytes, ref position);
@@ -115,12 +122,12 @@ public class LotheaderFile
         if (Version == 0) // B41
         {
             MinLayer = 0;
-            MaxLayer = Math.Min(MaxLayer, bytes.ReadInt32(ref position));
+            MaxLayer = bytes.ReadInt32(ref position);     // Math.Min(MaxLayer, bytes.ReadInt32(ref position));
         }
         else // B42
         {
-            MinLayer = Math.Max(MinLayer, bytes.ReadInt32(ref position));
-            MaxLayer = Math.Min(MaxLayer, bytes.ReadInt32(ref position) + 1);
+            MinLayer = bytes.ReadInt32(ref position);     // Math.Max(MinLayer, bytes.ReadInt32(ref position));
+            MaxLayer = bytes.ReadInt32(ref position) + 1; // Math.Min(MaxLayer, bytes.ReadInt32(ref position) + 1);
         }
     }
 
@@ -161,6 +168,100 @@ public class LotheaderFile
         }
     }
 
+    public IEnumerable<Room> GetRoomsByBuilding(int buildingId)
+    {
+        return Buildings[buildingId].RoomIds.Select(id => Rooms[id]);
+    }
+
+    public void Save(string path)
+    {
+        using (var stream = new FileStream(path, FileMode.OpenOrCreate))
+        {
+            Save(stream);
+        }
+    }
+
+    public void Save(Stream stream)
+    {
+        using var writer = new BinaryWriter(stream);
+
+        WriteVersion(writer);
+        WriteTileDefs(writer);
+
+        if (Version == 0)
+            writer.Write((byte)0);
+
+        WriteSize(writer);
+        WriteLayers(writer);
+        WriteRooms(writer);
+        WriteBuildings(writer);
+        WriteZombieSpawns(writer);
+    }
+
+    private void WriteVersion(BinaryWriter writer)
+    {
+        if (Version != 0)
+        {
+            writer.Write(magic);
+        }
+
+        writer.Write(Version);
+    }
+
+    private void WriteTileDefs(BinaryWriter writer)
+    {
+        writer.Write(TileNames.Length);
+
+        foreach (var tileName in TileNames)
+        {
+            writer.Write(Encoding.UTF8.GetBytes(tileName + "\n"));
+        }
+    }
+
+    private void WriteSize(BinaryWriter writer)
+    {
+        writer.Write(Width);
+        writer.Write(Height);
+    }
+
+    private void WriteLayers(BinaryWriter writer)
+    {
+        if (Version == 0) // B41
+        {
+            writer.Write(MaxLayer);
+        }
+        else // B42
+        {
+            writer.Write(MinLayer);
+            writer.Write(MaxLayer - 1);
+        }
+    }
+
+    private void WriteRooms(BinaryWriter writer)
+    {
+        writer.Write(Rooms.Length);
+
+        foreach (var room in Rooms)
+        {
+            room.Write(writer);
+        }
+    }
+
+    private void WriteBuildings(BinaryWriter writer)
+    {
+        writer.Write(Buildings.Length);
+
+        foreach (var building in Buildings)
+        {
+            building.Write(writer);
+        }
+    }
+
+    private void WriteZombieSpawns(BinaryWriter writer)
+    {
+        writer.Write(ZombieSpawns);
+    }
+
     public void ToJsonFile(string path)
     {
         string json = JsonSerializer.Serialize(this, new JsonSerializerOptions()
@@ -195,9 +296,19 @@ public class Building
         return building;
     }
 
-    public Color SimpleColor()
+    public void Write(BinaryWriter writer)
     {
-        return Utils.SimpleColor(GetHashCode());
+        writer.Write(RoomIds.Length);
+
+        foreach (var roomId in RoomIds)
+        {
+            writer.Write(roomId);
+        }
+    }
+
+    public Color GetColor()
+    {
+        return Utils.IntToColor(GetHashCode());
     }
 }
 
@@ -263,6 +374,40 @@ public class Room
                 X = bytes.ReadInt32(ref position),
                 Y = bytes.ReadInt32(ref position),
             };
+        }
+    }
+
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(Encoding.UTF8.GetBytes(Name + "\n"));
+        writer.Write(Layer);
+
+        WriteRectangles(writer);
+        WriteMeta(writer);
+    }
+
+    private void WriteRectangles(BinaryWriter writer)
+    {
+        writer.Write(Rectangles.Length);
+
+        foreach (var rect in Rectangles)
+        {
+            writer.Write(rect.X);
+            writer.Write(rect.Y);
+            writer.Write(rect.Width);
+            writer.Write(rect.Height);
+        }
+    }
+
+    private void WriteMeta(BinaryWriter writer)
+    {
+        writer.Write(RoomObjects.Length);
+
+        foreach (var roomObject in RoomObjects)
+        {
+            writer.Write(roomObject.Type);
+            writer.Write(roomObject.X);
+            writer.Write(roomObject.Y);
         }
     }
 
