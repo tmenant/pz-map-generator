@@ -19,6 +19,32 @@ public class Program
 
         TestReadAllPackFiles(pathB41);
         TestReadAllPackFiles(pathB42);
+
+        ReadAllTileFiles(pathB41);
+        ReadAllTileFiles(pathB42);
+    }
+
+    public static void ReadAllTileFiles(string gamePath)
+    {
+        var tilesPath = $"{gamePath}/media";
+
+        foreach (var file in Directory.GetFiles(tilesPath))
+        {
+            if (!file.EndsWith(".tiles"))
+                continue;
+
+            try
+            {
+                TilesFile.Read(file).ToJsonFile($"ignore/tilesdef/{Path.GetFileName(file)}.json");
+            }
+            catch(Exception exc)
+            {
+                Console.WriteLine($"{exc.Message}: '{file}'");
+                continue;
+            }
+
+            Console.WriteLine(file);
+        }
     }
 
     public static void TestReadWriteAllMapFiles(string gamePath)

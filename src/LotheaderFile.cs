@@ -261,16 +261,6 @@ public class LotheaderFile
     {
         writer.Write(ZombieSpawns);
     }
-
-    public void ToJsonFile(string path)
-    {
-        string json = JsonSerializer.Serialize(this, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-        });
-
-        File.WriteAllText(path, json);
-    }
 }
 
 
