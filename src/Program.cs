@@ -14,9 +14,6 @@ public class Program
 
     public static void Main(string[] args)
     {
-        TestReadAllMapFiles(pathB41);
-        TestReadAllMapFiles(pathB42);
-
         TestReadWriteAllMapFiles(pathB41);
         TestReadWriteAllMapFiles(pathB42);
 
@@ -31,31 +28,41 @@ public class Program
         var totalTimer = Utils.StartTimer();
         var filesCount = 0;
 
-        for (int x = 0; x < 99; x++)
+        for (int x = 0; x < 128; x++)
         {
-            for (int y = 0; y < 99; y++)
+            for (int y = 0; y < 128; y++)
             {
-                string headerPath = $"{mapPath}/{x}_{y}.lotheader";
-                string lotpackPath = $"{mapPath}/world_{x}_{y}.lotpack";
-
-                if (!Path.Exists(headerPath))
-                    continue;
-
-                Console.WriteLine(Path.GetFileName(headerPath));
-
-                TestReadWriteLotheader(headerPath);
-
-                filesCount++;
+                filesCount += TestReadWriteMapfile(mapPath, x, y);
             }
         }
 
         Console.WriteLine($"{filesCount} read in {totalTimer.ElapsedMilliseconds / 1000:F3}s (average = {totalTimer.ElapsedMilliseconds / filesCount}ms / file)");
     }
 
-    public static void TestReadWriteLotheader(string path)
+    public static int TestReadWriteMapfile(string directory, int x, int y)
     {
-        var bytes = File.ReadAllBytes(path);
-        var header = LotheaderFile.Read(bytes);
+        string headerPath = $"{directory}/{x}_{y}.lotheader";
+        string lotpackPath = $"{directory}/world_{x}_{y}.lotpack";
+
+        if (!Path.Exists(headerPath))
+            return 0;
+
+        Console.WriteLine(Path.GetFileName(headerPath));
+
+        var headerBytes = File.ReadAllBytes(headerPath);
+        var lotpackBytes = File.ReadAllBytes(lotpackPath);
+
+        var header = LotheaderFile.Read(headerBytes);
+        var lotpack = LotpackFile.Read(lotpackPath, header);
+
+        TestSaveLotheader(header, headerBytes);
+        TestSaveLotpack(lotpack, lotpackBytes);
+
+        return 1;
+    }
+
+    public static void TestSaveLotheader(LotheaderFile header, byte[] bytes)
+    {
         var buffer = new MemoryStream();
 
         header.Save(buffer);
@@ -70,21 +77,24 @@ public class Program
 
         if (md5_before != md5_after)
             throw new Exception($"Different hash: {md5_before} / {md5_after}");
+    }
 
-        // Console.WriteLine($"{bytes.Length} / {bytesAfter.Length}");
-        // Console.WriteLine($"{md5_before}");
-        // Console.WriteLine($"{md5_after}");
+    public static void TestSaveLotpack(LotpackFile lotpack, byte[] bytes)
+    {
+        var buffer = new MemoryStream();
 
-        // for (int i = 0; i < bytes.Length; i++)
-        // {
-        //     var before = bytes[i];
-        //     var after = bytesAfter[i];
+        lotpack.Save(buffer);
 
-        //     if (before != after)
-        //     {
-        //         Console.WriteLine($"{i} ({before}, {after})");
-        //     }
-        // }
+        var bytesAfter = buffer.ToArray();
+
+        if (bytes.Length != bytesAfter.Length)
+            throw new Exception($"Different length: {bytes.Length:N0} / {bytesAfter.Length:N0}");
+
+        var md5_before = Utils.HashMd5(bytes);
+        var md5_after = Utils.HashMd5(buffer.ToArray());
+
+        if (md5_before != md5_after)
+            throw new Exception($"Different hash: {md5_before} / {md5_after}");
     }
 
     public static void ExportBuilding()
@@ -130,13 +140,16 @@ public class Program
 
             var filename = Path.GetFileName(file);
             var packFile = PackFile.Read(file);
+            var texturesCount = 0;
 
             foreach (var page in packFile.Pages)
             {
                 page.SavePng($"{pngDirectory}/{page.Name}.png");
+
+                texturesCount += page.Textures.Length;
             }
 
-            Console.WriteLine($"{filename}: version {packFile.Version}, {packFile.Pages.Length} pages");
+            Console.WriteLine($"{filename}: version {packFile.Version}, {packFile.Pages.Length} pages, {texturesCount} textures");
         }
     }
 
