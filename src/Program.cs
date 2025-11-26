@@ -16,6 +16,27 @@ public class Program
 
     public static void Main(string[] args)
     {
+        string mapPath = GetMapDir(pathB42);
+
+        var totalTimer = Utils.StartTimer();
+        var filesCount = 0;
+
+        foreach (var file in Directory.GetFiles(mapPath))
+        {
+            if (Path.GetFileName(file).EndsWith(".lotheader"))
+            {
+                // Console.WriteLine(file);
+                var header = LotheaderFile.Read(file);
+                filesCount++;
+            }
+        }
+
+        Console.WriteLine($"{filesCount} read in {totalTimer.ElapsedMilliseconds / 1000:F3}s (average = {totalTimer.ElapsedMilliseconds / (float)filesCount:F3}ms / file)");
+
+    }
+
+    public static void test(string[] args)
+    {
         var header = LotheaderFile.Read("ignore/B41/27_38.lotheader");
         var lotpack = LotpackFile.Read("ignore/B41/world_27_38.lotpack", header);
 
@@ -117,6 +138,7 @@ public class Program
         }
 
         Console.WriteLine($"{filesCount} read in {totalTimer.ElapsedMilliseconds / 1000:F3}s (average = {totalTimer.ElapsedMilliseconds / filesCount}ms / file)");
+
     }
 
     public static int TestReadWriteMapfile(string directory, int x, int y)

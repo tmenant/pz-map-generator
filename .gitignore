@@ -6,3 +6,7 @@
 *.dll
 *.exe
 *.zip
+
+# Added by cargo
+
+/target

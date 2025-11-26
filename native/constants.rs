@@ -1,0 +1,2 @@
+pub const CELL_SIZE_IN_BLOCKS: usize = 32;
+pub const SQR_CELL_SIZE_IN_BLOCKS: usize = CELL_SIZE_IN_BLOCKS * CELL_SIZE_IN_BLOCKS;
