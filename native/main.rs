@@ -1,4 +1,5 @@
 mod buf_reader_extensions;
+mod buf_writer_extensions;
 mod constants;
 mod lotheader;
 
@@ -20,7 +21,7 @@ fn main() -> Result<()> {
         {
             // println!("{}", path_buf.file_name().unwrap().to_str().unwrap());
 
-            Lotheader::read(&path_str)?;
+            Lotheader::from_file(&path_str)?;
 
             // println!("\tmagic:    {}", header.magic);
             // println!("\tversion:  {}", header.version);
