@@ -7,8 +7,15 @@
 
 #include "types.h"
 
-struct Room;
-struct Building;
+struct Room
+{
+    uint32_t id;
+};
+
+struct Building
+{
+    uint32_t id;
+};
 
 class LotHeaderFile
 {

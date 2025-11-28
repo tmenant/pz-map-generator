@@ -24,8 +24,6 @@ endif()
 # ---- Collect all sources recursively ----
 file(GLOB_RECURSE SOURCES
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
-    "${PROJECT_SOURCE_DIR}/src/*.cxx"
-    "${PROJECT_SOURCE_DIR}/src/*.cc"
 )
 
 file(GLOB_RECURSE HEADERS
@@ -35,6 +33,11 @@ file(GLOB_RECURSE HEADERS
 
 # ---- Target ----
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        "${PROJECT_SOURCE_DIR}/src"
+)
 
 # ---- Example: link external libs later ----
 # target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 imgui::imgui fmt::fmt)

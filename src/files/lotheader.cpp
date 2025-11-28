@@ -7,9 +7,9 @@ LotHeaderFile LotHeaderFile::read(const std::string &filename)
 
 LotHeaderFile LotHeaderFile::read(const std::vector<uint8_t> &buffer)
 {
-    LotHeaderFile header = LotHeaderFile();
+    return LotHeaderFile();
+}
 
-    header.read_magic(buffer);
-
-    return header;
+void LotHeaderFile::read_magic(const BytesBuffer &buffer)
+{
 }
