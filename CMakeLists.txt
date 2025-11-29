@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
 # ---- Project ----
-project(file-parser
+project(pz-map-generator
     VERSION 0.1.0
     LANGUAGES CXX
 )
@@ -11,7 +11,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# vcpkg debug helper (optional)
+
+# ---- vcpkg debug helper (optional) ----
 # message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
 
 # ---- Warnings (Platform aware) ----
@@ -34,10 +35,13 @@ file(GLOB_RECURSE HEADERS
 # ---- Target ----
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        "${PROJECT_SOURCE_DIR}/src"
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${PROJECT_SOURCE_DIR}/src"
 )
 
-# ---- Example: link external libs later ----
-# target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 imgui::imgui fmt::fmt)
+# ---- external libs ----
+find_package(fmt CONFIG REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    fmt::fmt
+)

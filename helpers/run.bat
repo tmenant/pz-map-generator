@@ -11,4 +11,4 @@ if %ERRORLEVEL% neq 0 (
 
 del "%LOGFILE%"
 
-build\Debug\file-parser.exe %*
+build\msvc-debug\Debug\pz-map-generator.exe %*

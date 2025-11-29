@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <fmt/core.h>
+
 #include "files/lotheader.h"
 
 #include "io/binary_reader.h"
@@ -21,7 +23,7 @@ void read_header(std::string path)
     BytesBuffer buffer = FileReader::read(path);
     LotHeader header = LotHeader::read(buffer);
 
-    std::cout << "magic: " << header.magic << ", version: " << header.version << std::endl;
+    fmt::print("magic: {}, version: {}\n", header.magic, header.version);
 }
 
 int main()

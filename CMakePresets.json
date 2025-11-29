@@ -1,0 +1,18 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "msvc-debug",
+            "displayName": "Debug build with MSVC + vcpkg",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "$env{MSVC_HOME}/bin/Hostx64/x64/cl.exe",
+                "CMAKE_C_COMPILER": "$env{MSVC_HOME}/bin/Hostx64/x64/cl.exe",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_HOME}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ]
+}

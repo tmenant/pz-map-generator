@@ -1,4 +1,6 @@
 @echo off
 
-cmake -B build -S .
-cmake --build build
+set PRESET_NAME=msvc-debug
+
+cmake --preset %PRESET_NAME%
+cmake --build build/%PRESET_NAME%
