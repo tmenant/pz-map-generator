@@ -1,15 +1,18 @@
 #include "lotheader.h"
+#include "io/binary_reader.h"
 
-LotHeaderFile LotHeaderFile::read(const std::string &filename)
+LotHeader LotHeader::read(const std::string &filename)
 {
-    return LotHeaderFile();
+    return LotHeader();
 }
 
-LotHeaderFile LotHeaderFile::read(const std::vector<uint8_t> &buffer)
+LotHeader LotHeader::read(const BytesBuffer &buffer)
 {
-    return LotHeaderFile();
-}
+    LotHeader header = LotHeader();
+    size_t offset = 0;
 
-void LotHeaderFile::read_magic(const BytesBuffer &buffer)
-{
+    header.magic = BinaryReader::read_n_chars(buffer, 4, offset);
+    header.version = BinaryReader::read_int32(buffer, offset);
+
+    return header;
 }

@@ -6,14 +6,11 @@
 #include <string>
 #include <vector>
 
-class BinaryReader
+#include "types.h"
+
+namespace BinaryReader
 {
-private:
-    const std::vector<uint8_t> &data;
+    std::string read_n_chars(const BytesBuffer &buffer, size_t size, size_t &offset);
 
-public:
-    BinaryReader(const std::vector<uint8_t> &buffer);
-
-    std::string read_n_chars(size_t size, size_t &offset);
-    uint32_t read_int32(size_t &offset);
+    uint32_t read_int32(const BytesBuffer &buffer, size_t &offset);
 };

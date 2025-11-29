@@ -17,26 +17,21 @@ struct Building
     uint32_t id;
 };
 
-class LotHeaderFile
+class LotHeader
 {
 public:
-    int CellSizeInBlock = 0;
-    int BlockSizeInSquare = 0;
-    int MinLayer = 0;
-    int MaxLayer = 0;
-    int Version = 0;
-    int Width = 0;
-    int Height = 0;
+    std::string magic = "";
+    int version = 0;
+    int width = 0;
+    int height = 0;
 
     std::vector<std::string> TileNames;
     std::vector<Room> Rooms;
     std::vector<Building> Buildings;
     std::vector<uint8_t> ZombieSpawns;
 
-    LotHeaderFile() = default;
+    LotHeader() = default;
 
-    static LotHeaderFile read(const std::string &filename);
-    static LotHeaderFile read(const BytesBuffer &buffer);
-
-    void read_magic(const BytesBuffer &buffer);
+    static LotHeader read(const std::string &filename);
+    static LotHeader read(const BytesBuffer &buffer);
 };
