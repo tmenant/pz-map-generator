@@ -11,6 +11,7 @@
 #include "files/lotheader.h"
 #include "io/binary_reader.h"
 #include "io/file_reader.h"
+#include "math/md5.h"
 
 const std::string LOTHEADER_PATH = "data/B42/27_38.lotheader";
 
@@ -19,11 +20,13 @@ void read_header()
     BytesBuffer buffer = FileReader::read(LOTHEADER_PATH);
     LotHeader header = LotHeader::read(buffer);
 
-    fmt::print("magic: {}, version: {}\n", header.magic, header.version);
+    std::string hash = MD5::toHash(buffer);
+
+    fmt::println("magic: {}, version: {}, md5: {}", header.magic, header.version, hash);
 
     for (const std::string &tilename : header.tileNames)
     {
-        std::cout << tilename << std::endl;
+        fmt::println("{}", tilename);
     }
 }
 
