@@ -41,7 +41,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # ---- external libs ----
 find_package(fmt CONFIG REQUIRED)
+find_package(cpptrace CONFIG REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    fmt::fmt
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE cpptrace::cpptrace)
