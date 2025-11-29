@@ -9,25 +9,27 @@
 #include <cpptrace/from_current.hpp>
 
 #include "files/lotheader.h"
+#include "files/lotpack.h"
 #include "io/binary_reader.h"
 #include "io/file_reader.h"
 #include "math/md5.h"
 
 const std::string LOTHEADER_PATH = "data/B42/27_38.lotheader";
+const std::string LOTHPACK_PATH = "data/B42/world_27_38.lotpack";
 
 void read_header()
 {
-    BytesBuffer buffer = FileReader::read(LOTHEADER_PATH);
-    LotHeader header = LotHeader::read(buffer);
+    BytesBuffer headerBuffer = FileReader::read(LOTHEADER_PATH);
+    BytesBuffer lotpackBuffer = FileReader::read(LOTHPACK_PATH);
 
-    std::string hash = MD5::toHash(buffer);
+    LotHeader header = LotHeader::read(headerBuffer);
+    Lotpack lotpack = Lotpack::read(lotpackBuffer, header);
 
-    fmt::println("magic: {}, version: {}, md5: {}", header.magic, header.version, hash);
+    std::string headerHash = MD5::toHash(headerBuffer);
+    std::string lotpackHash = MD5::toHash(lotpackBuffer);
 
-    for (const std::string &tilename : header.tileNames)
-    {
-        fmt::println("{}", tilename);
-    }
+    fmt::println("magic: {}, version: {}, md5: {}", header.magic, header.version, headerHash);
+    fmt::println("magic: {}, version: {}, md5: {}", lotpack.magic, lotpack.version, lotpackHash);
 }
 
 int main()

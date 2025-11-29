@@ -6,7 +6,7 @@
 
 LotHeader LotHeader::read(const std::string &filename)
 {
-    return LotHeader();
+    throw std::runtime_error("not implemented");
 }
 
 LotHeader LotHeader::read(const BytesBuffer &buffer)
