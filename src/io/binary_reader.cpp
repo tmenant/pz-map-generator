@@ -1,5 +1,7 @@
 #include "binary_reader.h"
 
+#include "exceptions.h"
+
 std::string BinaryReader::read_n_chars(const BytesBuffer &buffer, size_t size, size_t &offset)
 {
     if (offset + size > buffer.size())
@@ -37,6 +39,33 @@ std::string BinaryReader::readLineTrimmed(const BytesBuffer &buffer, size_t &off
     }
 
     throw std::runtime_error("line terminator not found");
+}
+
+std::string BinaryReader::readStringWithLength(const BytesBuffer &buffer, size_t &offset)
+{
+    int32_t size = readInt32(buffer, offset);
+
+    if (offset + size > buffer.size())
+        throw std::runtime_error("buffer too small");
+
+    std::string line(reinterpret_cast<const char *>(&buffer[offset]), size);
+    offset += size;
+
+    return line;
+}
+
+BytesBuffer BinaryReader::readBytesWithLength(const BytesBuffer &buffer, size_t &offset)
+{
+    int32_t size = readInt32(buffer, offset);
+
+    if (offset + size > buffer.size())
+        throw std::runtime_error("buffer too small");
+
+    BytesBuffer result(size);
+    std::memcpy(result.data(), buffer.data() + offset, 4);
+    offset += size;
+
+    return result;
 }
 
 BytesBuffer BinaryReader::readExact(const BytesBuffer &buffer, uint32_t size, size_t &offset)
