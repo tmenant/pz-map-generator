@@ -4,7 +4,7 @@
 namespace constants
 {
     constexpr int MIN_LAYER = -32;
-    constexpr int MAX_LAYER = -32;
+    constexpr int MAX_LAYER = 32;
 
     constexpr int BLOCK_SIZE_IN_SQUARE = 8;
     constexpr int SQUARE_PER_BLOCK = BLOCK_SIZE_IN_SQUARE * BLOCK_SIZE_IN_SQUARE;
@@ -13,6 +13,8 @@ namespace constants
     constexpr int BLOCKS_PER_CELL = CELL_SIZE_IN_BLOCKS * CELL_SIZE_IN_BLOCKS;
 
     constexpr char LINE_END = 0xA;
+
+    const std::string GAME_PATH_B42 = "C:/SteamLibrary/steamapps/common/ProjectZomboidB42";
 
     constexpr std::string_view LOTHEADER_EXT = ".lotheader";
     constexpr std::string_view LOTPACK_EXT = ".lotpack";
