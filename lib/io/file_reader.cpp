@@ -24,3 +24,17 @@ BytesBuffer FileReader::read(std::string path)
 
     return buffer;
 }
+
+void FileReader::save(const BytesBuffer &buffer, std::string path)
+{
+    std::ofstream file(path, std::ios::binary | std::ios::trunc);
+    if (!file)
+    {
+        throw std::runtime_error("Can't open file for writing: " + path);
+    }
+
+    if (!file.write(reinterpret_cast<const char *>(buffer.data()), buffer.size()))
+    {
+        throw std::runtime_error("Failed to write to file: " + path);
+    }
+}

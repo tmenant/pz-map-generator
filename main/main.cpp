@@ -19,13 +19,15 @@
 #include "io/binary_reader.h"
 #include "io/file_reader.h"
 #include "math/md5.h"
+#include "services/game_files_service.h"
 
+const std::string GAME_PATH = "C:/SteamLibrary/steamapps/common/ProjectZomboidB42";
 const std::string LOTHEADER_PATH = "data/B42/27_38.lotheader";
 const std::string LOTHPACK_PATH = "data/B42/world_27_38.lotpack";
 const std::string TILESDEF_PATH = "data/B42/newtiledefinitions.tiles";
-const std::string TEXTUREPACK_PATH = "C:/SteamLibrary/steamapps/common/ProjectZomboidB42/media/texturepacks/Tiles2x.pack";
+const std::string TEXTUREPACK_PATH = "/media/texturepacks/Tiles2x.pack";
 
-void read_header()
+void readGameFiles()
 {
     BytesBuffer headerBuffer = FileReader::read(LOTHEADER_PATH);
     BytesBuffer lotpackBuffer = FileReader::read(LOTHPACK_PATH);
@@ -75,25 +77,57 @@ BytesBuffer create_png(size_t width, size_t height)
     return result;
 }
 
+sf::Vector2u getPNGSize(const BytesBuffer &data)
+{
+    if (data.size() < 24)
+        throw std::runtime_error("Not enough data for PNG");
+
+    const uint8_t pngSig[8] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+    for (int i = 0; i < 8; ++i)
+        if (data[i] != pngSig[i])
+            throw std::runtime_error("Invalid PNG signature");
+
+    uint32_t width = (data[16] << 24) | (data[17] << 16) | (data[18] << 8) | data[19];
+    uint32_t height = (data[20] << 24) | (data[21] << 16) | (data[22] << 8) | data[23];
+
+    return { width, height };
+}
+
 void main_window()
 {
+    GameFilesService gamefileService(GAME_PATH);
+
+    TexturePack::Page page = gamefileService.getPageByName("Tiles1x1");
+    int textureIndex = -1;
+
+    for (int i = 0; i < page.textures.size(); i++)
+    {
+        if (page.textures[i].name == "blends_natural_01_1")
+        {
+            textureIndex = i;
+            break;
+        }
+    }
+
+    if(textureIndex == -1)
+    {
+        throw std::runtime_error("texture not found");
+    }
+
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window", sf::Style::Close | sf::Style::Titlebar);
 
-    sf::Vector2i size(128, 128);
-    BytesBuffer pngBuffer = create_png(size.x, size.y);
-
+    sf::Vector2u size = getPNGSize(page.png);
     sf::Texture texture;
-    if (!texture.loadFromMemory(pngBuffer.data(), pngBuffer.size()))
+
+    fmt::println("png size: {}, {}", size.x, size.y);
+
+    if (!texture.loadFromMemory(page.png.data(), page.png.size()))
     {
         std::cerr << "Erreur : Échec du chargement de la texture depuis le buffer PNG." << std::endl;
         return;
     }
 
-    sf::Sprite sprite1(texture);
-    sf::Sprite sprite2(texture);
-
-    sprite2.setPosition({ 128, 128 });
-    sprite2.setScale({ 0.5f, 0.5f });
+    sf::Sprite sprite(texture);
 
     std::cout << "Texture chargée avec succès." << std::endl;
 
@@ -111,8 +145,7 @@ void main_window()
         }
 
         window.clear();
-        window.draw(sprite1);
-        window.draw(sprite2);
+        window.draw(sprite);
         window.display();
     }
 }

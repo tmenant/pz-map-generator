@@ -13,12 +13,14 @@ class GameFilesService
 public:
     std::string gamePath;
 
-    std::vector<TileDefinition> tiledefinitionFiles;
-    std::vector<TexturePack> texturePackFiles;
-    std::vector<Lotpack> lotpackFiles;
-    std::vector<LotHeader> lotheaderFiles;
+    std::vector<TileDefinition> tiledefinitions;
+    std::vector<TexturePack> texturePacks;
+    std::vector<Lotpack> lotpacks;
+    std::vector<LotHeader> lotheaders;
 
     GameFilesService(std::string _gamePath);
+
+    TexturePack::Page getPageByName(const std::string &name);
 
 private:
     void readTileDefinitions();

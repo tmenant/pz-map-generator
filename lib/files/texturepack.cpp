@@ -40,7 +40,7 @@ int32_t TexturePack::readVersion(const BytesBuffer &buffer, std::string magic, s
     }
 }
 
-std::vector<Page> TexturePack::readPages(const BytesBuffer &buffer, int32_t version, size_t &offset)
+std::vector<TexturePack::Page> TexturePack::readPages(const BytesBuffer &buffer, int32_t version, size_t &offset)
 {
     int32_t pagesCount = BinaryReader::readInt32(buffer, offset);
     std::vector<Page> pages(pagesCount);
@@ -76,7 +76,7 @@ BytesBuffer TexturePack::readPNG(const BytesBuffer &buffer, int32_t version, siz
     }
 }
 
-std::vector<Texture> TexturePack::readTextures(const BytesBuffer &buffer, size_t &offset)
+std::vector<TexturePack::Texture> TexturePack::readTextures(const BytesBuffer &buffer, size_t &offset)
 {
     int32_t texturesCount = BinaryReader::readInt32(buffer, offset);
     std::vector<Texture> textures(texturesCount);
