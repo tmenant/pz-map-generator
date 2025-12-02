@@ -18,7 +18,8 @@ namespace constants
 
     constexpr std::string_view LOTHEADER_EXT = ".lotheader";
     constexpr std::string_view LOTPACK_EXT = ".lotpack";
-    constexpr std::string_view PACK_EXT = ".pack";
+    constexpr std::string_view TEXT_PACK_EXT = ".pack";
+    constexpr std::string_view TILE_DEF_EXT = ".tiles";
 
     constexpr std::string_view MAGIC_LOTHEADER = "LOTH";
     constexpr std::string_view MAGIC_LOTPACK = "LOTP";
