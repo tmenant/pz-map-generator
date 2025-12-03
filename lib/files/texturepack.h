@@ -11,14 +11,14 @@ public:
     struct Texture
     {
         std::string name;
-        uint32_t x;
-        uint32_t y;
-        uint32_t width;
-        uint32_t height;
-        uint32_t ox;
-        uint32_t oy;
-        uint32_t ow;
-        uint32_t oh;
+        int32_t x;
+        int32_t y;
+        int32_t width;
+        int32_t height;
+        int32_t ox;
+        int32_t oy;
+        int32_t ow;
+        int32_t oh;
     };
 
     struct Page

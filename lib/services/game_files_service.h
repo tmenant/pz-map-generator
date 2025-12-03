@@ -20,7 +20,7 @@ public:
 
     GameFilesService(std::string _gamePath);
 
-    TexturePack::Page getPageByName(const std::string &name);
+    TexturePack::Page getPageByName(const std::string &name) const;
 
 private:
     void readTileDefinitions();

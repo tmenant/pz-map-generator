@@ -14,7 +14,7 @@ GameFilesService::GameFilesService(std::string _gamePath) : gamePath(_gamePath)
     readTexturePacks();
 }
 
-TexturePack::Page GameFilesService::getPageByName(const std::string &name)
+TexturePack::Page GameFilesService::getPageByName(const std::string &name) const
 {
     for (const TexturePack &texturePack : texturePacks)
     {
