@@ -59,7 +59,7 @@ TexturePack::Texture *getTextureByName(TexturePack::Page &page, std::string text
     return textureData;
 }
 
-TexturePack::Texture *getTextureByPosition(TexturePack::Page &page, sf::Vector2i pos)
+TexturePack::Texture *getTextureByPosition(TexturePack::Page &page, sf::Vector2f pos)
 {
     for (int i = 0; i < page.textures.size(); i++)
     {
@@ -74,10 +74,13 @@ TexturePack::Texture *getTextureByPosition(TexturePack::Page &page, sf::Vector2i
     return nullptr;
 }
 
-sf::RectangleShape getOutlineRectangle(TexturePack::Texture *textureData)
+sf::RectangleShape getOutlineRectangle(TexturePack::Texture *textureData, sf::Transform transform)
 {
-    sf::RectangleShape rectangle({ static_cast<float>(textureData->width), static_cast<float>(textureData->height) });
-    rectangle.setPosition({ static_cast<float>(textureData->x), static_cast<float>(textureData->y) });
+    sf::Vector2f size = transform.transformPoint({ static_cast<float>(textureData->width), static_cast<float>(textureData->height) });
+    sf::Vector2f position = transform.transformPoint({ static_cast<float>(textureData->x), static_cast<float>(textureData->y) });
+
+    sf::RectangleShape rectangle(size);
+    rectangle.setPosition(position);
     rectangle.setOutlineColor(sf::Color::Red);
     rectangle.setOutlineThickness(1.0f);
     rectangle.setFillColor(sf::Color::Transparent);
@@ -107,6 +110,8 @@ void main_window()
     sf::Vector2u textureSize = getPNGSize(page.png);
     sf::Texture texture = loadTexture(page);
     sf::Sprite sprite(texture);
+    const float size = 1.5f;
+    sprite.setScale({size, size});
 
     TexturePack::Texture *hoveredTexture = nullptr;
 
@@ -140,12 +145,15 @@ void main_window()
         window.clear();
         window.draw(sprite);
 
-        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-        hoveredTexture = getTextureByPosition(page, mousePosition);
+        sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        sf::Transform inverse = sprite.getInverseTransform();
+        sf::Vector2f local = inverse.transformPoint(mouse);
+
+        hoveredTexture = getTextureByPosition(page, local);
 
         if (hoveredTexture != nullptr)
         {
-            sf::RectangleShape spriteOutiline = getOutlineRectangle(hoveredTexture);
+            sf::RectangleShape spriteOutiline = getOutlineRectangle(hoveredTexture, sprite.getTransform());
             window.draw(spriteOutiline);
         }
 
