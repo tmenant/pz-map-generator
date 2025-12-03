@@ -35,7 +35,7 @@ sf::Vector2u getPNGSize(const BytesBuffer &data)
     uint32_t width = (data[16] << 24) | (data[17] << 16) | (data[18] << 8) | data[19];
     uint32_t height = (data[20] << 24) | (data[21] << 16) | (data[22] << 8) | data[23];
 
-    return { width, height };
+    return sf::Vector2u{ width, height };
 }
 
 TexturePack::Texture *getTextureByName(TexturePack::Page &page, std::string textureName)
@@ -59,16 +59,19 @@ TexturePack::Texture *getTextureByName(TexturePack::Page &page, std::string text
     return textureData;
 }
 
-sf::Texture getTexture(TexturePack::Page &page)
+TexturePack::Texture *getTextureByPosition(TexturePack::Page &page, sf::Vector2i pos)
 {
-    sf::Texture texture;
-
-    if (!texture.loadFromMemory(page.png.data(), page.png.size()))
+    for (int i = 0; i < page.textures.size(); i++)
     {
-        throw std::runtime_error("Erreur : Échec du chargement de la texture depuis le buffer PNG.");
+        TexturePack::Texture text = page.textures[i];
+
+        if (pos.x >= text.x && pos.y >= text.y && pos.x < text.x + text.width && pos.y < text.y + text.height)
+        {
+            return &page.textures[i];
+        }
     }
 
-    return texture;
+    return nullptr;
 }
 
 sf::RectangleShape getOutlineRectangle(TexturePack::Texture *textureData)
@@ -82,17 +85,30 @@ sf::RectangleShape getOutlineRectangle(TexturePack::Texture *textureData)
     return rectangle;
 }
 
+sf::Texture loadTexture(TexturePack::Page &page)
+{
+    sf::Texture texture;
+
+    if (!texture.loadFromMemory(page.png.data(), page.png.size()))
+    {
+        throw std::runtime_error("Erreur : Échec du chargement de la texture depuis le buffer PNG.");
+    }
+
+    return texture;
+}
+
 void main_window()
 {
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window", sf::Style::Close | sf::Style::Titlebar);
+    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "My window");
 
     GameFilesService gamefileService(constants::GAME_PATH);
     TexturePack::Page page = gamefileService.getPageByName("Tiles1x1");
-    TexturePack::Texture *textureData = getTextureByName(page, "blends_natural_01_1");
 
-    sf::Texture texture = getTexture(page);
+    sf::Vector2u textureSize = getPNGSize(page.png);
+    sf::Texture texture = loadTexture(page);
     sf::Sprite sprite(texture);
-    sf::RectangleShape spriteOutiline = getOutlineRectangle(textureData);
+
+    TexturePack::Texture *hoveredTexture = nullptr;
 
     while (window.isOpen())
     {
@@ -107,11 +123,32 @@ void main_window()
                 if (keyPressed->scancode == sf::Keyboard::Scancode::Up)
                     window.close();
             }
+            else if (const auto *mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+            {
+                if (hoveredTexture != nullptr)
+                {
+                    fmt::println("{}", hoveredTexture->name);
+                }
+            }
+            else if (const auto *resized = event->getIf<sf::Event::Resized>())
+            {
+                sf::FloatRect visibleArea({ 0.f, 0.f }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
+                window.setView(sf::View(visibleArea));
+            }
         }
 
         window.clear();
         window.draw(sprite);
-        window.draw(spriteOutiline);
+
+        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+        hoveredTexture = getTextureByPosition(page, mousePosition);
+
+        if (hoveredTexture != nullptr)
+        {
+            sf::RectangleShape spriteOutiline = getOutlineRectangle(hoveredTexture);
+            window.draw(spriteOutiline);
+        }
+
         window.display();
     }
 }
