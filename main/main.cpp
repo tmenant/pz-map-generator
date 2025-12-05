@@ -23,6 +23,33 @@
 #include "services/game_files_service.h"
 #include "types.h"
 
+#include <dwmapi.h>
+#include <windows.h>
+
+WNDPROC g_originalProc = nullptr;
+
+LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    return CallWindowProcA(g_originalProc, hwnd, msg, wParam, lParam);
+}
+
+void setWindowDarkMode(const sf::RenderWindow &window)
+{
+    HWND hwnd = reinterpret_cast<HWND>(window.getNativeHandle());
+
+    g_originalProc = reinterpret_cast<WNDPROC>(
+        SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc));
+
+    BOOL dark = TRUE;
+    DwmSetWindowAttribute(hwnd, 20, &dark, sizeof(dark));
+    DwmSetWindowAttribute(hwnd, 19, &dark, sizeof(dark));
+
+    ShowWindow(hwnd, SW_MINIMIZE);
+    ShowWindow(hwnd, SW_RESTORE);
+
+    SendMessageW(hwnd, WM_NCACTIVATE, TRUE, 0);
+}
+
 sf::Vector2u getPNGSize(const BytesBuffer &data)
 {
     if (data.size() < 24)
@@ -118,8 +145,10 @@ void drawSpriteOutline(sf::RenderWindow &window, sf::Sprite &sprite, TexturePack
 
 void main_window()
 {
-    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "My window");
+    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "PZ Map Generator");
     sf::Clock deltaClock;
+
+    setWindowDarkMode(window);
 
     GameFilesService gamefileService(constants::GAME_PATH);
     TexturePack::Page page = gamefileService.getPageByName("Tiles1x1");
