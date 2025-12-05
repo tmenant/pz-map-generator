@@ -28,7 +28,7 @@ FetchContent_MakeAvailable(tgui)
 # Library
 file(GLOB_RECURSE LIB_SOURCES "lib/*.cpp")
 add_library(pzlib STATIC ${LIB_SOURCES})
-target_include_directories(pzlib PUBLIC lib)
+target_include_directories(pzlib PUBLIC lib main)
 target_link_libraries(pzlib PUBLIC
     fmt::fmt
     cpptrace::cpptrace

@@ -19,11 +19,11 @@
 #include <cpptrace/from_current.hpp>
 
 #include "TGUI/Color.hpp"
-#include "TGUI/Widgets/Label.hpp"
 #include "TGUI/Widgets/Panel.hpp"
 #include "constants.h"
 #include "files/texturepack.h"
 #include "services/game_files_service.h"
+#include "sprite_panel.h"
 #include "types.h"
 
 #include <dwmapi.h>
@@ -175,18 +175,11 @@ void main_window()
 
     tgui::Gui gui{ window };
 
-    auto infoPanel = tgui::Panel::create();
-    infoPanel->getRenderer()->setBackgroundColor(tgui::Color(54, 61, 74));
-
     auto explorerPanel = tgui::Panel::create();
     explorerPanel->getRenderer()->setBackgroundColor(tgui::Color(54, 61, 74));
-
-    auto label = tgui::Label::create();
-    label->getRenderer()->setTextColor(tgui::Color::White);
-    infoPanel->add(label);
-
-    gui.add(infoPanel);
     gui.add(explorerPanel);
+
+    auto spritePanel = SpritePanel(gui);
 
     while (window.isOpen())
     {
@@ -208,24 +201,12 @@ void main_window()
         // viewport drawings
         window.clear(sf::Color(33, 38, 46));
         window.draw(sprite);
-
-        auto winsize = window.getSize();
-        infoPanel->setSize(250, winsize.y);
-        infoPanel->setPosition(winsize.x - 250, 0);
+        drawSpriteOutline(window, sprite, page, hoveredTexture);
 
         explorerPanel->setSize(250, winsize.y);
         explorerPanel->setPosition(0, 0);
 
-        drawSpriteOutline(window, sprite, page, hoveredTexture);
-
-        if (hoveredTexture != nullptr)
-        {
-            label->setText("name: " + hoveredTexture->name);
-        }
-        else
-        {
-            label->setText("");
-        }
+        spritePanel.update(window, hoveredTexture);
 
         gui.draw();
         window.display();
