@@ -1,4 +1,7 @@
 #include <crtdbg.h>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/View.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -102,20 +105,6 @@ TexturePack::Texture *getTextureByPosition(TexturePack::Page &page, sf::Vector2f
     return nullptr;
 }
 
-sf::RectangleShape getOutlineRectangle(TexturePack::Texture *textureData, sf::Transform transform)
-{
-    sf::Vector2f size = transform.transformPoint({ static_cast<float>(textureData->width), static_cast<float>(textureData->height) });
-    sf::Vector2f position = transform.transformPoint({ static_cast<float>(textureData->x), static_cast<float>(textureData->y) });
-
-    sf::RectangleShape rectangle(size);
-    rectangle.setPosition(position);
-    rectangle.setOutlineColor(sf::Color::Red);
-    rectangle.setOutlineThickness(1.0f);
-    rectangle.setFillColor(sf::Color::Transparent);
-
-    return rectangle;
-}
-
 sf::Texture loadTexture(TexturePack::Page &page)
 {
     sf::Texture texture;
@@ -126,6 +115,23 @@ sf::Texture loadTexture(TexturePack::Page &page)
     }
 
     return texture;
+}
+
+sf::RectangleShape getOutlineRectangle(TexturePack::Texture *textureData, sf::Transform transform)
+{
+    sf::FloatRect rect(
+        { static_cast<float>(textureData->x), static_cast<float>(textureData->y) },
+        { static_cast<float>(textureData->width), static_cast<float>(textureData->height) });
+
+    rect = transform.transformRect(rect);
+
+    sf::RectangleShape rectangle(rect.size);
+    rectangle.setPosition(rect.position);
+    rectangle.setOutlineColor(sf::Color::Red);
+    rectangle.setOutlineThickness(1.0f);
+    rectangle.setFillColor(sf::Color::Transparent);
+
+    return rectangle;
 }
 
 void drawSpriteOutline(sf::RenderWindow &window, sf::Sprite &sprite, TexturePack::Page &page, TexturePack::Texture *&hoveredTexture)
@@ -146,6 +152,7 @@ void drawSpriteOutline(sf::RenderWindow &window, sf::Sprite &sprite, TexturePack
 void main_window()
 {
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "PZ Map Generator");
+    sf::Vector2u winsize = window.getSize();
     sf::Clock deltaClock;
 
     setWindowDarkMode(window);
@@ -156,8 +163,11 @@ void main_window()
     sf::Vector2u textureSize = getPNGSize(page.png);
     sf::Texture texture = loadTexture(page);
     sf::Sprite sprite(texture);
+    sf::FloatRect bounds = sprite.getLocalBounds();
     const float size = 1.0f;
     sprite.setScale({ size, size });
+    sprite.setOrigin({ bounds.size.x / 2.f, bounds.size.y / 2.f });
+    sprite.setPosition({ winsize.x / 2.f, winsize.y / 2.f });
 
     TexturePack::Texture *hoveredTexture = nullptr;
 
@@ -165,14 +175,18 @@ void main_window()
 
     tgui::Gui gui{ window };
 
-    auto panel = tgui::Panel::create();
-    panel->getRenderer()->setBackgroundColor(tgui::Color(54, 61, 74));
+    auto infoPanel = tgui::Panel::create();
+    infoPanel->getRenderer()->setBackgroundColor(tgui::Color(54, 61, 74));
+
+    auto explorerPanel = tgui::Panel::create();
+    explorerPanel->getRenderer()->setBackgroundColor(tgui::Color(54, 61, 74));
 
     auto label = tgui::Label::create();
     label->getRenderer()->setTextColor(tgui::Color::White);
-    panel->add(label);
+    infoPanel->add(label);
 
-    gui.add(panel);
+    gui.add(infoPanel);
+    gui.add(explorerPanel);
 
     while (window.isOpen())
     {
@@ -184,11 +198,11 @@ void main_window()
             {
                 window.close();
             }
-            else if (const auto *resized = event->getIf<sf::Event::Resized>())
-            {
-                sf::FloatRect visibleArea({ 0.f, 0.f }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
-                window.setView(sf::View(visibleArea));
-            }
+            // else if (const auto *resized = event->getIf<sf::Event::Resized>())
+            // {
+            //     sf::FloatRect visibleArea({ 0.f, 0.f }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
+            //     window.setView(sf::View(visibleArea));
+            // }
         }
 
         // viewport drawings
@@ -196,8 +210,11 @@ void main_window()
         window.draw(sprite);
 
         auto winsize = window.getSize();
-        panel->setSize(250, winsize.y);
-        panel->setPosition(winsize.x - 250, 0);
+        infoPanel->setSize(250, winsize.y);
+        infoPanel->setPosition(winsize.x - 250, 0);
+
+        explorerPanel->setSize(250, winsize.y);
+        explorerPanel->setPosition(0, 0);
 
         drawSpriteOutline(window, sprite, page, hoveredTexture);
 
