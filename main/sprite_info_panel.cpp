@@ -1,4 +1,4 @@
-#include "sprite_panel.h"
+#include "sprite_info_panel.h"
 #include "theme.h"
 
 SpritePanel::SpritePanel(tgui::Gui &gui)

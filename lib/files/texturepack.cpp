@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <vector>
 
 #include "exceptions.h"
@@ -5,16 +6,17 @@
 #include "io/file_reader.h"
 #include "texturepack.h"
 
-TexturePack TexturePack::read(const std::string &path)
+TexturePack TexturePack::read(const std::filesystem::path &path)
 {
-    return TexturePack::read(FileReader::read(path));
+    return TexturePack::read(path.filename().string(), FileReader::read(path.string()));
 }
 
-TexturePack TexturePack::read(const BytesBuffer &buffer)
+TexturePack TexturePack::read(const std::string &name, const BytesBuffer &buffer)
 {
     TexturePack texturePack{};
     size_t offset = 0;
 
+    texturePack.name = name;
     texturePack.magic = BinaryReader::read_n_chars(buffer, 4, offset);
     texturePack.version = TexturePack::readVersion(buffer, texturePack.magic, offset);
     texturePack.pages = TexturePack::readPages(buffer, texturePack.version, offset);

@@ -25,4 +25,5 @@ namespace Colors
 
     const Color panelColor = Color(54, 61, 74);
     const Color backgroundColor = Color(33, 38, 46);
+    const Color fontColor = Color(255, 255, 255);
 };

@@ -23,8 +23,8 @@
 #include "constants.h"
 #include "files/texturepack.h"
 #include "services/game_files_service.h"
-#include "sprite_panel.h"
-#include "types.h"
+#include "sprite_explorer_panel.h"
+#include "sprite_info_panel.h"
 
 #include <dwmapi.h>
 #include <windows.h>
@@ -180,6 +180,7 @@ void main_window()
     gui.add(explorerPanel);
 
     auto spritePanel = SpritePanel(gui);
+    auto spriteExplorer = SpriteExplorerPanel(gui, gamefileService);
 
     while (window.isOpen())
     {
@@ -207,6 +208,7 @@ void main_window()
         explorerPanel->setPosition(0, 0);
 
         spritePanel.update(window, hoveredTexture);
+        spriteExplorer.update(window);
 
         gui.draw();
         window.display();

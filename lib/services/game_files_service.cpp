@@ -1,10 +1,9 @@
 #include <filesystem>
-#include <iostream>
+
+#include <fmt/format.h>
 
 #include "constants.h"
-#include "exceptions.h"
 #include "game_files_service.h"
-#include "io/file_reader.h"
 
 namespace fs = std::filesystem;
 
@@ -64,7 +63,7 @@ void GameFilesService::readTexturePacks()
 
         if (path.extension().string() == constants::TEXT_PACK_EXT)
         {
-            TexturePack texturePack = TexturePack::read(path.string());
+            TexturePack texturePack = TexturePack::read(path);
 
             // fmt::println("{}: version: {}, pages: {}", path.filename().string(), texturePack.version, texturePack.pages.size());
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -30,14 +31,15 @@ public:
         std::vector<Texture> textures;
     };
 
+    std::string name;
     std::string magic;
     uint32_t version;
     std::vector<Page> pages;
 
     TexturePack() = default;
 
-    static TexturePack read(const std::string &path);
-    static TexturePack read(const BytesBuffer &buffer);
+    static TexturePack read(const std::filesystem::path &path);
+    static TexturePack read(const std::string &name, const BytesBuffer &buffer);
     static int32_t readVersion(const BytesBuffer &buffer, std::string magic, size_t &offset);
     static BytesBuffer readPNG(const BytesBuffer &buffer, int32_t version, size_t &offset);
     static std::vector<Page> readPages(const BytesBuffer &buffer, int32_t version, size_t &offset);
