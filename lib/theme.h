@@ -24,6 +24,9 @@ namespace Colors
     };
 
     const Color panelColor = Color(54, 61, 74);
+    const Color buttonColor = Color(37, 43, 52);
     const Color backgroundColor = Color(33, 38, 46);
     const Color fontColor = Color(255, 255, 255);
+    const Color selectedItem = Color(55, 79, 102);
+    const Color hoveredItem = Color(42, 54, 68);
 };
