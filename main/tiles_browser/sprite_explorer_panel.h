@@ -5,12 +5,12 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include "TGUI/Backend/SFML-Graphics.hpp"
-#include "TGUI/String.hpp"
-#include "TGUI/Widgets/EditBox.hpp"
-#include "TGUI/Widgets/Panel.hpp"
-#include "TGUI/Widgets/TreeView.hpp"
-#include "TGUI/Widgets/VerticalLayout.hpp"
+#include <TGUI/Backend/SFML-Graphics.hpp>
+#include <TGUI/String.hpp>
+#include <TGUI/Widgets/EditBox.hpp>
+#include <TGUI/Widgets/Panel.hpp>
+#include <TGUI/Widgets/TreeView.hpp>
+#include <TGUI/Widgets/VerticalLayout.hpp>
 
 #include "services/game_files_service.h"
 

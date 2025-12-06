@@ -1,16 +1,17 @@
-#include "TGUI/Color.hpp"
-#include "TGUI/Layout.hpp"
-#include "TGUI/Outline.hpp"
-#include "TGUI/String.hpp"
-#include "TGUI/Widgets/Panel.hpp"
-#include "TGUI/Widgets/VerticalLayout.hpp"
-#include <fmt/base.h>
-#include <fmt/format.h>
-
-#include <sprite_explorer_panel.h>
-#include <theme.h>
 #include <string>
 #include <vector>
+
+#include <fmt/format.h>
+
+#include <TGUI/Color.hpp>
+#include <TGUI/Layout.hpp>
+#include <TGUI/Outline.hpp>
+#include <TGUI/String.hpp>
+#include <TGUI/Widgets/Panel.hpp>
+#include <TGUI/Widgets/VerticalLayout.hpp>
+
+#include "sprite_explorer_panel.h"
+#include "theme.h"
 
 SpriteExplorerPanel::SpriteExplorerPanel(tgui::Gui &gui, GameFilesService &gameFilesService)
 {

@@ -10,14 +10,14 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window.hpp>
 
-#include "TGUI/String.hpp"
-#include "TGUI/Widgets/EditBox.hpp"
-#include "TGUI/Widgets/Grid.hpp"
 #include <TGUI/Backend/SFML-Graphics.hpp>
+#include <TGUI/String.hpp>
 #include <TGUI/TGUI.hpp>
+#include <TGUI/Widgets/EditBox.hpp>
+#include <TGUI/Widgets/Grid.hpp>
+#include <TGUI/Widgets/ListBox.hpp>
+#include <TGUI/Widgets/VerticalLayout.hpp>
 
-#include "TGUI/Widgets/ListBox.hpp"
-#include "TGUI/Widgets/VerticalLayout.hpp"
 #include "files/texturepack.h"
 
 class SpriteInfoPanel

@@ -1,7 +1,6 @@
 #define DOCTEST_CONFIG_NO_CAPTURE_STDOUT
 
 #include <filesystem>
-#include <iostream>
 #include <string>
 
 #include <doctest/doctest.h>

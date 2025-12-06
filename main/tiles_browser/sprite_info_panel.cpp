@@ -1,20 +1,23 @@
-#include "sprite_info_panel.h"
-#include "TGUI/Color.hpp"
-#include "TGUI/Cursor.hpp"
-#include "TGUI/Layout.hpp"
-#include "TGUI/Outline.hpp"
-#include "TGUI/String.hpp"
-#include "TGUI/TextStyle.hpp"
-#include "TGUI/Widgets/EditBox.hpp"
-#include "TGUI/Widgets/Grid.hpp"
-#include "TGUI/Widgets/Label.hpp"
-#include "TGUI/Widgets/ListBox.hpp"
-#include "TGUI/Widgets/VerticalLayout.hpp"
-#include "files/texturepack.h"
-#include "theme.h"
-#include <fmt/base.h>
 #include <string>
 #include <vector>
+
+#include <fmt/base.h>
+
+#include <TGUI/Color.hpp>
+#include <TGUI/Cursor.hpp>
+#include <TGUI/Layout.hpp>
+#include <TGUI/Outline.hpp>
+#include <TGUI/String.hpp>
+#include <TGUI/TextStyle.hpp>
+#include <TGUI/Widgets/EditBox.hpp>
+#include <TGUI/Widgets/Grid.hpp>
+#include <TGUI/Widgets/Label.hpp>
+#include <TGUI/Widgets/ListBox.hpp>
+#include <TGUI/Widgets/VerticalLayout.hpp>
+
+#include "files/texturepack.h"
+#include "sprite_info_panel.h"
+#include "theme.h"
 
 SpriteInfoPanel::SpriteInfoPanel(tgui::Gui &gui)
 {

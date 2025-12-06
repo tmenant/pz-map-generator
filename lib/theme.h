@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TGUI/Color.hpp"
 #include <SFML/Graphics/Color.hpp>
+#include <TGUI/Color.hpp>
 #include <cstdint>
 
 namespace Colors

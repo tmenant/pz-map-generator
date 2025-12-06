@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cstdint>
-#include <stdexcept>
-
 #include <fmt/format.h>
+#include <stdexcept>
 
 namespace Exceptions
 {

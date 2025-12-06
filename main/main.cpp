@@ -1,7 +1,5 @@
 #include <crtdbg.h>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
+
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -9,26 +7,31 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 
-#include "TGUI/String.hpp"
 #include <TGUI/Backend/SFML-Graphics.hpp>
+#include <TGUI/String.hpp>
 #include <TGUI/TGUI.hpp>
 
 #include <fmt/format.h>
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
 
-#include "constants.h"
 #include "files/texturepack.h"
-#include "platform.h"
 #include "services/game_files_service.h"
-#include "sprite_explorer_panel.h"
-#include "sprite_info_panel.h"
+
+#include "tiles_browser/sprite_explorer_panel.h"
+#include "tiles_browser/sprite_info_panel.h"
+
+#include "constants.h"
+#include "platform.h"
 #include "theme.h"
 
 sf::Vector2u getPNGSize(const BytesBuffer &data)

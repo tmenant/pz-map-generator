@@ -1,5 +1,6 @@
 #include "io/binary_reader.h"
 #include <doctest/doctest.h>
+#include <stdexcept>
 
 TEST_SUITE("BinaryReader")
 {
