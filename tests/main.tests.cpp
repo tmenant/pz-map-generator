@@ -1,3 +1,4 @@
+#include "math/vector2i.h"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include <doctest/doctest.h>
@@ -22,8 +23,8 @@ TEST_CASE("readGameFiles")
     std::string headerHash = MD5::toHash(headerBuffer);
     std::string lotpackHash = MD5::toHash(lotpackBuffer);
 
-    LotHeader header = LotHeader::read(headerBuffer);
-    Lotpack lotpack = Lotpack::read(lotpackBuffer, header);
+    LotHeader header = LotHeader::read(headerBuffer, Vector2i(0, 0));
+    Lotpack lotpack = Lotpack::read(lotpackBuffer, &header);
     TexturePack texturePack = TexturePack::read("texurepack", packBuffer);
     TileDefinition tileDefinition = TileDefinition::read(tileDefBuffer);
 

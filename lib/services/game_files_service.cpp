@@ -1,5 +1,6 @@
 #include <fmt/format.h>
 #include <filesystem>
+#include <string>
 
 #include "constants.h"
 #include "files/texturepack.h"
@@ -7,8 +8,10 @@
 
 namespace fs = std::filesystem;
 
-GameFilesService::GameFilesService(std::string _gamePath) : gamePath(_gamePath)
+GameFilesService::GameFilesService(std::string _gamePath)
 {
+    gamePath = _gamePath;
+
     readTileDefinitions();
     readTexturePacks();
 }

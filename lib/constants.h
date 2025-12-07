@@ -6,6 +6,7 @@ namespace constants
 {
     constexpr int MIN_LAYER = -32;
     constexpr int MAX_LAYER = 32;
+    constexpr int MAX_CELLS_SIZE = 1024;
 
     constexpr int BLOCK_SIZE_IN_SQUARE = 8;
     constexpr int SQUARE_PER_BLOCK = BLOCK_SIZE_IN_SQUARE * BLOCK_SIZE_IN_SQUARE;
@@ -32,4 +33,20 @@ namespace constants
     const std::string LOTHPACK_PATH = "data/B42/world_27_38.lotpack";
     const std::string TILESDEF_PATH = "data/B42/newtiledefinitions.tiles";
     const std::string TEXTUREPACK_PATH = GAME_PATH + "/media/texturepacks/Tiles2x.pack";
+}
+
+namespace MapNames
+{
+    const std::string Muldraugh = "Muldraugh, KY";
+    const std::string EchoCreek = "Echo Creek, KY";
+    const std::string Riverside = "Riverside, KY";
+    const std::string Rosewood = "Rosewood, KY";
+    const std::string WestPoint = "West Point, KY";
+    const std::string Challenge1 = "challengemaps/Challenge1";
+    const std::string Challenge2 = "challengemaps/Challenge2";
+    const std::string Kingsmouth = "challengemaps/Kingsmouth";
+    const std::string KnoxCounty = "challengemaps/KnoxCounty";
+    const std::string Studio = "challengemaps/Studio";
+    const std::string TheForest = "challengemaps/The Forest";
+    const std::string Tutorial = "challengemaps/Tutorial";
 }

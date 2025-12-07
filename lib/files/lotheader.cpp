@@ -1,20 +1,28 @@
 #include <fmt/format.h>
+#include <regex>
 
 #include "constants.h"
 #include "exceptions.h"
 #include "io/binary_reader.h"
+#include "io/file_reader.h"
 #include "lotheader.h"
+#include "math/vector2i.h"
+#include "types.h"
 
 LotHeader LotHeader::read(const std::string &filename)
 {
-    throw Exceptions::NotImplemented();
+    Vector2i cellPosition = getPositionFromFilename(filename);
+    BytesBuffer buffer = FileReader::read(filename);
+
+    return read(buffer, cellPosition);
 }
 
-LotHeader LotHeader::read(const BytesBuffer &buffer)
+LotHeader LotHeader::read(const BytesBuffer &buffer, Vector2i position)
 {
     LotHeader header = LotHeader();
     size_t offset = 0;
 
+    header.position = position;
     header.magic = BinaryReader::read_n_chars(buffer, 4, offset);
     header.version = BinaryReader::readInt32(buffer, offset);
     header.tileNames = LotHeader::readTileNames(buffer, offset);
@@ -146,4 +154,15 @@ std::vector<LotHeader::Building> LotHeader::readBuildings(const BytesBuffer &buf
 BytesBuffer LotHeader::readSpawns(const BytesBuffer &buffer, size_t &offset)
 {
     throw Exceptions::NotImplemented();
+}
+
+Vector2i LotHeader::getPositionFromFilename(std::string filename)
+{
+    std::regex pattern(".+((\\d+)_(\\d+)\\.lotheader)");
+
+    std::smatch match;
+    if (!std::regex_match(filename, match, pattern))
+        throw std::runtime_error("Nom de fichier invalide");
+
+    return Vector2i(std::stoi(match[1]), std::stoi(match[2]));
 }

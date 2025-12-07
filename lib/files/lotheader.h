@@ -1,10 +1,13 @@
 #pragma once
 
+#include <SFML/System/Vector2.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>
 
+#include "math/vector2i.h"
 #include "types.h"
+
 
 class LotHeader
 {
@@ -46,6 +49,7 @@ public:
     int32_t height = 0;
     int32_t maxLayer = 0;
     int32_t minLayer = 0;
+    Vector2i position;
 
     std::vector<std::string> tileNames;
     std::vector<Room> rooms;
@@ -55,7 +59,9 @@ public:
     LotHeader() = default;
 
     static LotHeader read(const std::string &filename);
-    static LotHeader read(const BytesBuffer &buffer);
+    static LotHeader read(const BytesBuffer &buffer, Vector2i position);
+
+    static Vector2i getPositionFromFilename(std::string filename);
 
 private:
     static std::vector<std::string> readTileNames(const BytesBuffer &buffer, size_t &offset);

@@ -3,16 +3,20 @@
 #include "constants.h"
 #include "exceptions.h"
 #include "io/binary_reader.h"
+#include "io/file_reader.h"
 #include "lotpack.h"
+#include "types.h"
 
-Lotpack::Lotpack(const LotHeader &header) : header(header) {}
+Lotpack::Lotpack(const LotHeader *header) : header(header) {}
 
-Lotpack Lotpack::read(const std::string &filename, const LotHeader &header)
+Lotpack Lotpack::read(const std::string &filename, const LotHeader *header)
 {
-    throw Exceptions::NotImplemented();
+    BytesBuffer buffer = FileReader::read(filename);
+
+    return read(buffer, header);
 }
 
-Lotpack Lotpack::read(const BytesBuffer &buffer, const LotHeader &header)
+Lotpack Lotpack::read(const BytesBuffer &buffer, const LotHeader *header)
 {
     Lotpack lotpack(header);
     size_t offset = 0;
@@ -49,7 +53,7 @@ void Lotpack::readBlockSquares(const BytesBuffer &buffer, uint16_t blockIndex, s
 {
     int32_t skip = 0;
 
-    for (int8_t z = 0; z < header.maxLayer - header.minLayer; z++)
+    for (int8_t z = 0; z < header->maxLayer - header->minLayer; z++)
     {
         if (skip >= constants::SQUARE_PER_BLOCK)
         {

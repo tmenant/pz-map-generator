@@ -9,29 +9,25 @@
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
 
+#include "cell_viewer/cell_viewer.h"
 #include "constants.h"
 #include "platform.h"
 #include "services/game_files_service.h"
+#include "services/map_files_service.h"
 #include "theme.h"
-#include "tiles_browser/tiles_browser.h"
 
 void main_window()
 {
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "PZ Map Generator");
-    sf::Vector2u winsize = window.getSize();
-    sf::Clock deltaClock;
-
+    platform::windows::setWindowDarkMode(window);
     window.setFramerateLimit(60);
 
-    sf::Texture texture;
-    sf::Sprite sprite(texture);
-
-    platform::windows::setWindowDarkMode(window);
-
-    GameFilesService gamefileService(constants::GAME_PATH);
     tgui::Gui gui{ window };
+    GameFilesService gamefileService(constants::GAME_PATH);
+    MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
 
-    TilesBrowser tilesBrowser(gui, window, gamefileService);
+    // TilesBrowser tilesBrowser(gui, window, gamefileService);
+    CellViewer cellViewer(gui, window, mapFileService, 32, 45);
 
     while (window.isOpen())
     {
@@ -53,7 +49,8 @@ void main_window()
         // viewport drawings
         window.clear(Colors::backgroundColor.sfml());
 
-        tilesBrowser.update(window);
+        // tilesBrowser.update(window);
+        cellViewer.update(window);
 
         gui.draw();
         window.display();
@@ -64,7 +61,8 @@ int main()
 {
     CPPTRACE_TRY
     {
-        main_window();
+        // main_window();
+        MapFilesService service(constants::GAME_PATH_B42, MapNames::Muldraugh);
     }
     CPPTRACE_CATCH(const std::exception &e)
     {

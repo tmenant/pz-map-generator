@@ -17,16 +17,17 @@ struct SquareData
 class Lotpack
 {
 public:
-    const LotHeader &header;
+    const LotHeader *header;
 
     std::string magic;
     uint32_t version;
     std::unordered_map<CellCoord, SquareData> squareMap;
 
-    Lotpack(const LotHeader &header);
+    Lotpack() = default;
+    Lotpack(const LotHeader *header);
 
-    static Lotpack read(const std::string &filename, const LotHeader &header);
-    static Lotpack read(const BytesBuffer &buffer, const LotHeader &header);
+    static Lotpack read(const std::string &filename, const LotHeader *header);
+    static Lotpack read(const BytesBuffer &buffer, const LotHeader *header);
 
     void readSquareMap(const BytesBuffer &buffer, size_t &offset);
     void readBlockSquares(const BytesBuffer &buffer, uint16_t blockIndex, size_t &offset);
