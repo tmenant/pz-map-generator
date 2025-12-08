@@ -4,7 +4,7 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 
 #include "files/texturepack.h"
-#include "services/game_files_service.h"
+#include "services/tilesheet_service.h"
 #include "sprite_explorer_panel.h"
 #include "sprite_info_panel.h"
 
@@ -21,7 +21,7 @@ private:
     TexturePack::Texture *hoveredTexture = nullptr;
 
 public:
-    TilesBrowser(tgui::Gui &gui, sf::RenderWindow &window, GameFilesService &gamefileService);
+    TilesBrowser(tgui::Gui &gui, sf::RenderWindow &window, TilesheetService &tilesheetService);
 
     void update(sf::RenderWindow &window);
 

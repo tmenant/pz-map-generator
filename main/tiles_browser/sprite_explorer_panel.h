@@ -12,7 +12,7 @@
 #include <TGUI/Widgets/TreeView.hpp>
 #include <TGUI/Widgets/VerticalLayout.hpp>
 
-#include "services/game_files_service.h"
+#include "services/tilesheet_service.h"
 
 class SpriteExplorerPanel
 {
@@ -25,11 +25,11 @@ private:
     std::vector<std::vector<tgui::String>> treeNodes;
 
 public:
-    SpriteExplorerPanel(tgui::Gui &gui, const GameFilesService &gameFilesService);
+    SpriteExplorerPanel(tgui::Gui &gui, const TilesheetService &tilesheetService);
 
     void onItemSelect(const std::vector<tgui::String> &selectedItem);
     void onFilterChange(const tgui::String &keyword);
     void onPageSelect(std::function<void(const tgui::String &pageName)>);
-    void InitTilesTree(const GameFilesService &gameFilesService);
+    void InitTilesTree(const TilesheetService &tilesheetService);
     void update(const sf::RenderWindow &window);
 };

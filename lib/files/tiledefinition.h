@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <filesystem>
 
 #include "types.h"
 
@@ -27,13 +28,15 @@ public:
         std::vector<TileData> tileDatas;
     };
 
+    std::string name;
     std::string magic;
     uint32_t version;
     std::vector<TileSheet> tileSheets;
 
     TileDefinition() = default;
 
-    static TileDefinition read(const BytesBuffer &buffer);
+    static TileDefinition read(const std::filesystem::path &path);
+    static TileDefinition read(const std::string &name, const BytesBuffer &buffer);
     static std::vector<TileSheet> readTileSheets(const BytesBuffer &buffer, size_t &offset);
     static std::unordered_map<std::string, std::string> readProperties(const BytesBuffer &buffer, size_t &offset);
     static int32_t generateSpriteID();

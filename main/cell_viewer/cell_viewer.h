@@ -7,6 +7,7 @@
 #include "files/lotheader.h"
 #include "files/lotpack.h"
 #include "services/map_files_service.h"
+#include <fmt/base.h>
 
 class CellViewer
 {

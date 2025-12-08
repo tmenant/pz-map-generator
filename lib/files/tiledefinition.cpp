@@ -2,13 +2,20 @@
 
 #include "exceptions.h"
 #include "io/binary_reader.h"
+#include "io/file_reader.h"
 #include "tiledefinition.h"
 
-TileDefinition TileDefinition::read(const BytesBuffer &buffer)
+TileDefinition TileDefinition::read(const std::filesystem::path &path)
+{
+    return TileDefinition::read(path.filename().string(), FileReader::read(path.string()));
+}
+
+TileDefinition TileDefinition::read(const std::string &name, const BytesBuffer &buffer)
 {
     TileDefinition tileDefinition{};
     size_t offset = 0;
 
+    tileDefinition.name = name;
     tileDefinition.magic = BinaryReader::read_n_chars(buffer, 4, offset);
     tileDefinition.version = BinaryReader::readInt32(buffer, offset);
     tileDefinition.tileSheets = TileDefinition::readTileSheets(buffer, offset);

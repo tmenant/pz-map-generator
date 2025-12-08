@@ -26,7 +26,7 @@ TEST_CASE("readGameFiles")
     LotHeader header = LotHeader::read(headerBuffer, Vector2i(0, 0));
     Lotpack lotpack = Lotpack::read(lotpackBuffer, &header);
     TexturePack texturePack = TexturePack::read("texurepack", packBuffer);
-    TileDefinition tileDefinition = TileDefinition::read(tileDefBuffer);
+    TileDefinition tileDefinition = TileDefinition::read("", tileDefBuffer);
 
     fmt::println("magic: {}, version: {}, md5: {}", header.magic, header.version, headerHash);
     fmt::println("magic: {}, version: {}, md5: {}", lotpack.magic, lotpack.version, lotpackHash);

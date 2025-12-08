@@ -1,4 +1,3 @@
-#include <string>
 #include <vector>
 
 #include <fmt/format.h>
@@ -13,7 +12,7 @@
 #include "sprite_explorer_panel.h"
 #include "theme.h"
 
-SpriteExplorerPanel::SpriteExplorerPanel(tgui::Gui &gui, const GameFilesService &gameFilesService)
+SpriteExplorerPanel::SpriteExplorerPanel(tgui::Gui &gui, const TilesheetService &tilesheetService)
 {
     panel = tgui::Panel::create();
     panel->getRenderer()->setBackgroundColor(Colors::panelColor.tgui());
@@ -44,7 +43,7 @@ SpriteExplorerPanel::SpriteExplorerPanel(tgui::Gui &gui, const GameFilesService 
     tilesTree->getRenderer()->setTextColorHover(Colors::fontColor.tgui());
     tilesTree->getHorizontalScrollbar()->setPolicy(tgui::Scrollbar::Policy::Never);
 
-    InitTilesTree(gameFilesService);
+    InitTilesTree(tilesheetService);
 
     vlayout->add(searchInput, 0.025f);
     vlayout->addSpace(0.01f);
@@ -91,11 +90,11 @@ void SpriteExplorerPanel::onFilterChange(const tgui::String &keyword)
     }
 }
 
-void SpriteExplorerPanel::InitTilesTree(const GameFilesService &gameFilesService)
+void SpriteExplorerPanel::InitTilesTree(const TilesheetService &tilesheetService)
 {
     treeNodes = std::vector<std::vector<tgui::String>>();
 
-    for (const auto &texturePack : gameFilesService.texturePacks)
+    for (const auto &texturePack : tilesheetService.texturePacks)
     {
         for (const auto &page : texturePack.pages)
         {

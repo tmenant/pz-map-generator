@@ -1,4 +1,5 @@
 #include <fmt/format.h>
+#include <vector>
 
 #include "constants.h"
 #include "exceptions.h"
@@ -35,7 +36,7 @@ Lotpack Lotpack::read(const BytesBuffer &buffer, const LotHeader *header)
 
 void Lotpack::readSquareMap(const BytesBuffer &buffer, size_t &offset)
 {
-    squareMap = std::unordered_map<CellCoord, SquareData>{};
+    squareMap = std::vector<SquareData>();
 
     uint32_t blocksCount = BinaryReader::readInt32(buffer, offset);
     uint32_t tableOffset = static_cast<uint32_t>(offset);
@@ -89,10 +90,11 @@ void Lotpack::readBlockSquares(const BytesBuffer &buffer, uint16_t blockIndex, s
                 }
                 else if (count > 1)
                 {
-                    CellCoord coord(blockIndex, x, y, z);
-                    SquareData squareData = Lotpack::readSquare(buffer, count - 1, offset);
 
-                    squareMap[coord] = squareData;
+                    SquareData squareData = Lotpack::readSquare(buffer, count - 1, offset);
+                    squareData.coord = CellCoord(blockIndex, x, y, z);
+
+                    squareMap.push_back(squareData);
                 }
             }
         }

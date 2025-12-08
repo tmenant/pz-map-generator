@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "core/cell_coord.h"
@@ -10,6 +9,7 @@
 
 struct SquareData
 {
+    CellCoord coord;
     uint32_t roomId;
     std::vector<int32_t> tiles;
 };
@@ -21,7 +21,7 @@ public:
 
     std::string magic;
     uint32_t version;
-    std::unordered_map<CellCoord, SquareData> squareMap;
+    std::vector<SquareData> squareMap;
 
     Lotpack() = default;
     Lotpack(const LotHeader *header);

@@ -3,15 +3,15 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-TilesBrowser::TilesBrowser(tgui::Gui &gui, sf::RenderWindow &window, GameFilesService &gamefileService) :
+TilesBrowser::TilesBrowser(tgui::Gui &gui, sf::RenderWindow &window, TilesheetService &tilesheetService) :
         spriteInfoPanel(gui),
-        spriteExplorerPanel(gui, gamefileService),
+        spriteExplorerPanel(gui, tilesheetService),
         texture(sf::Texture()),
         sprite(texture)
 {
     spriteExplorerPanel.onPageSelect([&](const tgui::String &pageName)
     {
-        currentPage = gamefileService.getPageByName(pageName.toStdString());
+        currentPage = tilesheetService.getPageByName(pageName.toStdString());
 
         if (currentPage != nullptr)
         {

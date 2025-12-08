@@ -5,16 +5,22 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 
+#include <fmt/base.h>
 #include <fmt/format.h>
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
 
 #include "cell_viewer/cell_viewer.h"
 #include "constants.h"
+#include "files/lotheader.h"
+#include "files/lotpack.h"
 #include "platform.h"
-#include "services/game_files_service.h"
+#include "services/tilesheet_service.h"
 #include "services/map_files_service.h"
 #include "theme.h"
+
+#include <psapi.h>
+#include <windows.h>
 
 void main_window()
 {
@@ -23,11 +29,13 @@ void main_window()
     window.setFramerateLimit(60);
 
     tgui::Gui gui{ window };
-    GameFilesService gamefileService(constants::GAME_PATH);
+    TilesheetService tilesheetService(constants::GAME_PATH);
     MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
 
-    // TilesBrowser tilesBrowser(gui, window, gamefileService);
+    // TilesBrowser tilesBrowser(gui, window, tilesheetService);
     CellViewer cellViewer(gui, window, mapFileService, 32, 45);
+
+    return;
 
     while (window.isOpen())
     {
@@ -57,12 +65,49 @@ void main_window()
     }
 }
 
+size_t getMemoryUsage()
+{
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+        return pmc.WorkingSetSize; // Mémoire physique utilisée en octets
+    return 0;
+}
+
+void test_cellViewer()
+{
+    TilesheetService tilesheetService(constants::GAME_PATH_B42);
+    MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
+
+    int x = 32;
+    int y = 45;
+
+    LotHeader lotheader = mapFileService.LoadLotheaderByPosition(x, y);
+    Lotpack lotpack = mapFileService.LoadLotpackByPosition(x, y, &lotheader);
+
+    for (auto const &squareData : lotpack.squareMap)
+    {
+        if (squareData.coord.chunk_idx() != 0)
+            continue;
+
+        for (const auto &tileIndex : squareData.tiles)
+        {
+            auto textureName = lotheader.tileNames[tileIndex];
+            auto textureData = tilesheetService.getTextureByName(textureName);
+            auto page = tilesheetService.getPageByTextureName(textureName);
+
+            if (textureData == nullptr || page == nullptr)
+                continue;
+
+            fmt::println("texture: {}, page: {}", textureName, page->name);
+        }
+    }
+}
+
 int main()
 {
     CPPTRACE_TRY
     {
-        // main_window();
-        MapFilesService service(constants::GAME_PATH_B42, MapNames::Muldraugh);
+        test_cellViewer();
     }
     CPPTRACE_CATCH(const std::exception &e)
     {

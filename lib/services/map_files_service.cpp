@@ -35,7 +35,7 @@ void MapFilesService::LoadMapFiles()
         std::string lotpackPath = path.replace_filename("world_" + path.filename().replace_extension(constants::LOTPACK_EXT).string()).string();
 
         fmt::println("lotheader: '{} ({})'", lotheaderPath, fs::exists(lotheaderPath));
-        fmt::println("lotpack  : '{} ({})'\n", lotpackPath, fs::exists(lotpackPath));
+        // fmt::println("lotpack  : '{} ({})'\n", lotpackPath, fs::exists(lotpackPath));
 
         LotHeader lotheader = LotHeader::read(lotheaderPath);
         Lotpack lotpack = Lotpack::read(lotpackPath, &lotheader);
