@@ -28,7 +28,7 @@ namespace constants
     constexpr std::string_view MAGIC_PACK = "PZPK";
     constexpr std::string_view MAGIC_TILEDEF = "tdef";
 
-    const std::string GAME_PATH = "C:/SteamLibrary/steamapps/common/ProjectZomboidB42";
+    const std::string GAME_PATH = GAME_PATH_B42;
     const std::string LOTHEADER_PATH = "data/B42/27_38.lotheader";
     const std::string LOTHPACK_PATH = "data/B42/world_27_38.lotpack";
     const std::string TILESDEF_PATH = "data/B42/newtiledefinitions.tiles";
