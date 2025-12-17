@@ -43,8 +43,6 @@ void TilesBrowser::update(sf::RenderWindow &window)
 
 void TilesBrowser::updateSpriteTexture(sf::Sprite &sprite, sf::Texture &texture, TexturePack::Page *page, const sf::RenderWindow &window)
 {
-    sf::Vector2u textureSize = getPNGSize(page->png);
-
     if (!texture.loadFromMemory(page->png.data(), page->png.size()))
     {
         throw std::runtime_error("Erreur : Échec du chargement de la texture depuis le buffer PNG.");

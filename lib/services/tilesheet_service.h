@@ -21,6 +21,7 @@ public:
 
     std::unordered_map<std::string, std::string> textureToPageName;
 
+    TilesheetService() = default;
     TilesheetService(std::string _gamePath);
 
     TexturePack::Texture *getTextureByName(const std::string &textureName);

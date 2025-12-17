@@ -70,11 +70,9 @@ void TilesheetService::readTileDefinitions()
         if (path.extension().string() != constants::TILE_DEF_EXT)
             continue;
 
-        auto tileDef = TileDefinition::read(path);
+        tiledefinitions.push_back(TileDefinition::read(path));
 
-        tiledefinitions.push_back(tileDef);
-
-        for (auto &tilesheet : tileDef.tileSheets)
+        for (auto &tilesheet : tiledefinitions.back().tileSheets)
         {
             tileSheetsByName[tilesheet.name] = &tilesheet;
 
@@ -90,6 +88,16 @@ void TilesheetService::readTexturePacks()
 {
     std::string texturesDirectory = gamePath + "/media/texturepacks";
 
+    const auto texturePackFiles = {
+        "Erosion.pack",
+        "ApCom.pack",
+        "RadioIcons.pack",
+        "ApComUI.pack",
+        "JumboTrees2x.pack",
+        "Tiles2x.floor.pack",
+        "Tiles2x.pack",
+    };
+
     texturePacks = std::vector<TexturePack>{};
     textureToPageName = std::unordered_map<std::string, std::string>{};
     texturesByName = std::unordered_map<std::string, TexturePack::Texture *>{};
@@ -97,21 +105,27 @@ void TilesheetService::readTexturePacks()
 
     fmt::println("Loading texturePacks...");
 
-    for (const auto &entry : fs::directory_iterator(texturesDirectory))
+    for (const auto &filename : texturePackFiles)
     {
-        fs::path path = entry.path();
+        fs::path path(texturesDirectory + "/" + filename);
 
         if (path.extension().string() != constants::TEXT_PACK_EXT)
             continue;
 
-        texturePacks.emplace_back(std::move(TexturePack::read(path)));
+        texturePacks.push_back(TexturePack::read(path));
 
         for (auto &page : texturePacks.back().pages)
         {
+            if (pagesByName.contains(page.name))
+                continue;
+
             pagesByName[page.name] = &page;
 
             for (auto &texture : page.textures)
             {
+                if (texturesByName.contains(texture.name))
+                    continue;
+
                 texturesByName[texture.name] = &texture;
                 textureToPageName[texture.name] = page.name;
             }
