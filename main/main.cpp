@@ -98,6 +98,8 @@ void test_texturePack()
 void main_window()
 {
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "PZ Map Generator");
+    sf::View view = window.getDefaultView();
+
     platform::windows::setWindowDarkMode(window);
     window.setFramerateLimit(60);
 
@@ -106,13 +108,14 @@ void main_window()
     MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
 
     // TilesBrowser tilesBrowser(gui, window, tilesheetService);
-    CellViewer cellViewer(&mapFileService, &tilesheetService, 32, 45);
+    CellViewer cellViewer(&view, &mapFileService, &tilesheetService, 32, 45);
 
     while (window.isOpen())
     {
         while (const std::optional event = window.pollEvent())
         {
             gui.handleEvent(*event);
+            cellViewer.handleEvents(*event, window);
 
             if (event->is<sf::Event::Closed>())
             {
@@ -120,8 +123,9 @@ void main_window()
             }
             else if (const auto *resized = event->getIf<sf::Event::Resized>())
             {
-                sf::FloatRect visibleArea({ 0.f, 0.f }, { static_cast<float>(resized->size.x), static_cast<float>(resized->size.y) });
-                window.setView(sf::View(visibleArea));
+                // sf::FloatRect visibleArea({ 0.f, 0.f }, { (float)resized->size.x, (float)resized->size.y });
+                view.setSize({ (float)resized->size.x, (float)resized->size.y });
+                window.setView(view);
             }
         }
 

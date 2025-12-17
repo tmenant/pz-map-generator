@@ -3,6 +3,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/View.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Window.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <algorithm>
 #include <cassert>
@@ -19,7 +24,32 @@
 #include "files/texturepack.h"
 #include "services/map_files_service.h"
 #include "services/tilesheet_service.h"
+#include <fmt/base.h>
 #include <fmt/format.h>
+
+struct ViewState
+{
+    sf::Vector2i lastMousePos;
+    sf::Vector2f center = { .0f, .0f };
+    float zoomLevel = 1.0f;
+    bool isDragging = false;
+
+    void applyTo(sf::View &view, sf::RenderWindow &window)
+    {
+        zoomLevel = fastClamp(zoomLevel, 0.2f, 4.f);
+
+        view.setSize({ window.getSize().x * zoomLevel, window.getSize().y * zoomLevel });
+        view.setCenter(center);
+    }
+
+    float fastClamp(float value, float min, float max)
+    {
+        if (value <= min) return min;
+        if (value >= max) return max;
+
+        return value;
+    }
+};
 
 class CellViewer
 {
@@ -32,21 +62,38 @@ public:
     std::unordered_map<std::string, std::optional<sf::Texture>> texturesByName;
     std::unordered_set<std::string> spritesNotFound;
 
-    CellViewer(MapFilesService *mapFileService, TilesheetService *tilesheetService, int x, int y)
+    ViewState viewState;
+    sf::View *view;
+
+    bool firstFrame = true;
+
+    CellViewer(sf::View *view, MapFilesService *mapFileService, TilesheetService *tilesheetService, int x, int y)
     {
         this->lotheader = mapFileService->LoadLotheaderByPosition(x, y);
         this->lotpack = mapFileService->LoadLotpackByPosition(x, y, &lotheader);
         this->tilesheetService = tilesheetService;
 
-        texturesByName = std::unordered_map<std::string, std::optional<sf::Texture>>{};
-        spritesNotFound = std::unordered_set<std::string>{};
+        this->viewState = ViewState();
+        this->view = view;
 
-        std::sort(lotpack.squareMap.begin(), lotpack.squareMap.end(), [](SquareData a, SquareData b)
+        this->texturesByName = std::unordered_map<std::string, std::optional<sf::Texture>>{};
+        this->spritesNotFound = std::unordered_set<std::string>{};
+
+        std::sort(lotpack.squareMap.begin(), lotpack.squareMap.end(), [](const SquareData &a, const SquareData &b)
         {
-            int depthA = (int)(a.coord.x() + a.coord.y() + a.coord.z());
-            int depthB = (int)(b.coord.x() + b.coord.y() + b.coord.z());
+            if (a.coord.chunk_idx() != b.coord.chunk_idx())
+                return a.coord.chunk_idx() < b.coord.chunk_idx();
 
-            return depthA < depthB;
+            if (a.coord.z() != b.coord.z())
+                return a.coord.z() < b.coord.z();
+
+            if (a.coord.y() != b.coord.y())
+                return a.coord.y() < b.coord.y();
+
+            if (a.coord.x() != b.coord.x())
+                return a.coord.x() < b.coord.x();
+
+            return false;
         });
     }
 
@@ -101,26 +148,70 @@ public:
         return sprite;
     }
 
+    void handleEvents(const sf::Event &event, sf::RenderWindow &window)
+    {
+        if (const auto *mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>())
+        {
+            if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical)
+            {
+                float factor = (mouseWheel->delta > 0) ? 0.9f : 1.1f;
+
+                viewState.zoomLevel *= factor;
+                viewState.lastMousePos = sf::Vector2i(window.mapPixelToCoords(mouseWheel->position, *view));
+            }
+        }
+
+        if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonPressed>())
+        {
+            if (mouseButton->button == sf::Mouse::Button::Left)
+            {
+                viewState.isDragging = true;
+                viewState.lastMousePos = mouseButton->position;
+            }
+        }
+
+        if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonReleased>())
+        {
+            if (mouseButton->button == sf::Mouse::Button::Left)
+            {
+                viewState.isDragging = false;
+            }
+        }
+
+        if (const auto *mouseMove = event.getIf<sf::Event::MouseMoved>())
+        {
+            if (viewState.isDragging)
+            {
+                sf::Vector2f oldPos = window.mapPixelToCoords(viewState.lastMousePos, *view);
+                sf::Vector2f newPos = window.mapPixelToCoords(mouseMove->position, *view);
+
+                viewState.center += (oldPos - newPos);
+                viewState.lastMousePos = mouseMove->position;
+            }
+        }
+    }
+
     void update(sf::RenderWindow &window)
     {
-        sf::View view;
-        view.setSize({ window.getSize().x * 1.f, window.getSize().y * 1.f });
-        view.setCenter({ 0.f, 0.f });
-        window.setView(view);
+        viewState.applyTo(*view, window);
+        window.setView(*view);
 
         const float TILE_WIDTH = 128.0f;
         const float TILE_HEIGHT = 64.0f;
 
         for (auto &square : lotpack.squareMap)
         {
-            if (square.coord.chunk_idx() != 3 || square.coord.z() != 2)
+            if (square.coord.z() != 2)
                 continue;
 
-            int cx_local = square.coord.chunk_idx() % constants::CELL_SIZE_IN_BLOCKS;
-            int cy_local = square.coord.chunk_idx() / constants::CELL_SIZE_IN_BLOCKS;
+            int chunkX = square.coord.chunk_idx() / constants::CELL_SIZE_IN_BLOCKS;
+            int chunkY = square.coord.chunk_idx() % constants::CELL_SIZE_IN_BLOCKS;
 
-            int gx = square.coord.x(); // + cx_local * constants::BLOCK_SIZE_IN_SQUARE;
-            int gy = square.coord.y(); // + cx_local * constants::BLOCK_SIZE_IN_SQUARE;
+            if (chunkX > 5 || chunkY > 5)
+                continue;
+
+            int gx = square.coord.x() + chunkX * constants::BLOCK_SIZE_IN_SQUARE;
+            int gy = square.coord.y() + chunkY * constants::BLOCK_SIZE_IN_SQUARE;
             int gz = square.coord.z();
 
             float screenX = (gx - gy) * (TILE_WIDTH / 2.0f);
@@ -149,5 +240,7 @@ public:
                 window.draw(*sprite);
             }
         }
+
+        firstFrame = false;
     }
 };
