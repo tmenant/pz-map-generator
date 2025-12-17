@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "constants.h"
 #include "core/cell_coord.h"
 #include "files/lotheader.h"
 #include "files/lotpack.h"
@@ -85,7 +86,7 @@ public:
 
         if (texture == nullptr)
         {
-            if(!spritesNotFound.contains(textureData->name))
+            if (!spritesNotFound.contains(textureData->name))
             {
                 spritesNotFound.insert(textureData->name);
                 fmt::println("sprite not found: '{}'", textureData->name);
@@ -115,6 +116,16 @@ public:
             if (square.coord.chunk_idx() != 3 || square.coord.z() != 2)
                 continue;
 
+            int cx_local = square.coord.chunk_idx() % constants::CELL_SIZE_IN_BLOCKS;
+            int cy_local = square.coord.chunk_idx() / constants::CELL_SIZE_IN_BLOCKS;
+
+            int gx = square.coord.x(); // + cx_local * constants::BLOCK_SIZE_IN_SQUARE;
+            int gy = square.coord.y(); // + cx_local * constants::BLOCK_SIZE_IN_SQUARE;
+            int gz = square.coord.z();
+
+            float screenX = (gx - gy) * (TILE_WIDTH / 2.0f);
+            float screenY = (gx + gy) * (TILE_HEIGHT / 2.0f) - gz * (TILE_HEIGHT * 3.0f);
+
             for (auto &spriteId : square.tiles)
             {
                 std::string &spriteName = lotheader.tileNames[spriteId];
@@ -131,23 +142,11 @@ public:
                 sf::Vector2i posInSheet = { textureData->x, textureData->y };
                 sf::Vector2i texSize = { textureData->width, textureData->height };
 
-                int gx = square.coord.x();
-                int gy = square.coord.y();
-                int gz = square.coord.z();
-
-                float screenX = (gx - gy) * (TILE_WIDTH / 2.0f);
-                float screenY = (gx + gy) * (TILE_HEIGHT / 2.0f) - gz * (TILE_HEIGHT * 3.0f);
-
-                screenX += textureData->ox;
-                screenY += textureData->oy;
-
                 sprite->setTextureRect(sf::IntRect(posInSheet, texSize));
                 sprite->setOrigin({ 0, 0 });
-                sprite->setPosition({ screenX, screenY });
+                sprite->setPosition({ screenX + textureData->ox, screenY + textureData->oy });
 
                 window.draw(*sprite);
-
-                // break;
             }
         }
     }
