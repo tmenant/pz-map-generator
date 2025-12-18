@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <unordered_map>
 #include <unordered_set>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <vector>
 
 #include "files/lotheader.h"
 #include "files/lotpack.h"
@@ -31,6 +33,12 @@ public:
         }
     };
 
+    struct RenderTile
+    {
+        int8_t layer;
+        sf::Sprite sprite;
+    };
+
     LotHeader lotheader;
     Lotpack lotpack;
 
@@ -41,6 +49,7 @@ public:
 
     ViewState viewState;
     sf::View *view;
+    std::vector<RenderTile> renderTiles;
 
     bool firstFrame = true;
     int currentLayer = 2;
@@ -52,4 +61,5 @@ public:
 
     void handleEvents(const sf::Event &event, sf::RenderWindow &window);
     void update(sf::RenderWindow &window);
+    void preComputeSprites();
 };

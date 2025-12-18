@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <optional>
+#include <vector>
 
 #include "constants.h"
 
@@ -18,6 +19,49 @@ CellViewer::CellViewer(sf::View *view, MapFilesService *mapFileService, Tileshee
 
     this->texturesByName = std::unordered_map<std::string, std::optional<sf::Texture>>{};
     this->spritesNotFound = std::unordered_set<std::string>{};
+
+    preComputeSprites();
+}
+
+void CellViewer::preComputeSprites()
+{
+    renderTiles.clear();
+
+    const float TILE_WIDTH = 128.0f;
+    const float TILE_HEIGHT = 64.0f;
+
+    for (auto &square : lotpack.squareMap)
+    {
+        int chunkX = square.coord.chunk_idx() / constants::CELL_SIZE_IN_BLOCKS;
+        int chunkY = square.coord.chunk_idx() % constants::CELL_SIZE_IN_BLOCKS;
+
+        int gx = square.coord.x() + chunkX * constants::BLOCK_SIZE_IN_SQUARE;
+        int gy = square.coord.y() + chunkY * constants::BLOCK_SIZE_IN_SQUARE;
+        int gz = square.coord.z();
+
+        float screenX = (gx - gy) * (TILE_WIDTH / 2.0f);
+        float screenY = (gx + gy) * (TILE_HEIGHT / 2.0f) - gz * (TILE_HEIGHT * 3.0f);
+
+        for (auto &spriteId : square.tiles)
+        {
+            std::string &spriteName = lotheader.tileNames[spriteId];
+            TexturePack::Texture *textureData = tilesheetService->getTextureByName(spriteName);
+
+            if (textureData == nullptr)
+                continue;
+
+            sf::Sprite sprite = createSprite(textureData);
+
+            sf::Vector2i posInSheet = { textureData->x, textureData->y };
+            sf::Vector2i texSize = { textureData->width, textureData->height };
+
+            sprite.setTextureRect(sf::IntRect(posInSheet, texSize));
+            sprite.setOrigin({ 0, 0 });
+            sprite.setPosition({ screenX + textureData->ox, screenY + textureData->oy });
+
+            renderTiles.push_back({ square.coord.z(), sprite });
+        }
+    }
 }
 
 sf::Texture *CellViewer::getOrCreateTexture(const std::string &textureName)
@@ -120,45 +164,11 @@ void CellViewer::update(sf::RenderWindow &window)
     viewState.applyTo(*view, window);
     window.setView(*view);
 
-    const float TILE_WIDTH = 128.0f;
-    const float TILE_HEIGHT = 64.0f;
-
-    for (auto &square : lotpack.squareMap)
+    for (auto &renderTile : renderTiles)
     {
-        if (square.coord.z() > currentLayer)
-            continue;
-
-        int chunkX = square.coord.chunk_idx() / constants::CELL_SIZE_IN_BLOCKS;
-        int chunkY = square.coord.chunk_idx() % constants::CELL_SIZE_IN_BLOCKS;
-
-        if (chunkX > 10 || chunkY > 10)
-            continue;
-
-        int gx = square.coord.x() + chunkX * constants::BLOCK_SIZE_IN_SQUARE;
-        int gy = square.coord.y() + chunkY * constants::BLOCK_SIZE_IN_SQUARE;
-        int gz = square.coord.z();
-
-        float screenX = (gx - gy) * (TILE_WIDTH / 2.0f);
-        float screenY = (gx + gy) * (TILE_HEIGHT / 2.0f) - gz * (TILE_HEIGHT * 3.0f);
-
-        for (auto &spriteId : square.tiles)
+        if (renderTile.layer <= currentLayer)
         {
-            std::string &spriteName = lotheader.tileNames[spriteId];
-            TexturePack::Texture *textureData = tilesheetService->getTextureByName(spriteName);
-
-            if (textureData == nullptr)
-                continue;
-
-            sf::Sprite sprite = createSprite(textureData);
-
-            sf::Vector2i posInSheet = { textureData->x, textureData->y };
-            sf::Vector2i texSize = { textureData->width, textureData->height };
-
-            sprite.setTextureRect(sf::IntRect(posInSheet, texSize));
-            sprite.setOrigin({ 0, 0 });
-            sprite.setPosition({ screenX + textureData->ox, screenY + textureData->oy });
-
-            window.draw(sprite);
+            window.draw(renderTile.sprite);
         }
     }
 
