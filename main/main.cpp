@@ -11,7 +11,7 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 
-#include "cell_viewer/cell_viewer.h"
+#include "gui/views/cell_viewer/cell_viewer.h"
 #include "constants.h"
 #include "platform.h"
 #include "services/map_files_service.h"
