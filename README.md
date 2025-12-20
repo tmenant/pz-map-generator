@@ -101,3 +101,7 @@ setx VCPKG_HOME "C:/path/to/vcpkg"
 # Build the prototype
 ./helpers/build.bat
 ```
+
+## References
+* [pzmap2dzi](https://github.com/cff29546/pzmap2dzi): used to setup files serializers (.lotpack, .lotheader, .pack, .tiles)
+* [rectPack2D](https://github.com/TeamHypersomnia/rectpack2D): used to create packed textures, allowing to batch cells rendering
