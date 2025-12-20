@@ -1,17 +1,28 @@
 #include "cell_viewer.h"
 
-#include <fmt/base.h>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <cstdint>
 #include <optional>
-#include <unordered_set>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
+#include <fmt/base.h>
+
 #include "TGUI/Backend/SFML-Graphics.hpp"
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+
+#include "algorithms/rect_pack/rectpack_2d.h"
+#include "files/texturepack.h"
+#include "gui/components/debug_panel.h"
+
 #include "constants.h"
 #include "timer.h"
-#include "gui/components/debug_panel.h"
+#include "types.h"
 
 CellViewer::CellViewer(sf::View *view, MapFilesService *mapFileService, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y) :
         debugPanel(gui)
@@ -23,10 +34,95 @@ CellViewer::CellViewer(sf::View *view, MapFilesService *mapFileService, Tileshee
     this->viewState = ViewState();
     this->view = view;
 
-    this->texturesByName = std::unordered_map<std::string, std::optional<sf::Texture>>{};
-    this->spritesNotFound = std::unordered_set<std::string>{};
-
+    packCellSprites();
     preComputeSprites();
+}
+
+void CellViewer::packCellSprites()
+{
+    auto timer = Timer::start();
+    auto tilesCount = lotheader.tileNames.size();
+
+    std::unordered_map<TexturePack::Page *, std::vector<size_t>> groupedSprites = {};
+    std::vector<rectpack2D::rect_xywh> rectangles(tilesCount);
+    std::vector<sf::Image> sprites(tilesCount);
+
+    for (size_t i = 0; i < tilesCount; i++)
+    {
+        const std::string &tilename = lotheader.tileNames[i];
+        TexturePack::Texture *textureData = tilesheetService->getTextureByName(tilename);
+
+        if (textureData == nullptr)
+        {
+            fmt::println("texture not found: '{}'", tilename);
+            continue;
+        }
+
+        auto page = tilesheetService->getPageByTextureName(tilename);
+        if (page == nullptr)
+        {
+            throw std::runtime_error("page not found: " + page->name);
+        }
+
+        if (!groupedSprites.contains(page))
+        {
+            groupedSprites[page] = {};
+        }
+
+        groupedSprites[page].push_back(i);
+
+        rectangles[i] = rectpack2D::rect_xywh(0, 0, textureData->width, textureData->height);
+    }
+
+    auto atlasSize = rectpack2D::packRectangles(rectangles);
+    auto packedSize = atlasSize.w * atlasSize.h * 4.f / 1024 / 1024;
+
+    fmt::println("{} tiles packed in {:.3f}ms, AtlasSize = {}x{} ({:.1f}Mo)", tilesCount, timer.elapsedMiliseconds(true), atlasSize.w, atlasSize.h, packedSize);
+
+    sf::Image atlasTexture;
+    atlasTexture.resize({ (uint32_t)atlasSize.w, (uint32_t)atlasSize.h });
+
+    for (const auto &entry : groupedSprites)
+    {
+        sf::Image image = loadTexture(entry.first);
+
+        for (const auto &index : entry.second)
+        {
+            std::string tilename = lotheader.tileNames[index];
+            TexturePack::Texture *textureData = tilesheetService->getTextureByName(tilename);
+
+            if (textureData == nullptr)
+                continue;
+
+            sf::IntRect areaToCopy = sf::IntRect({ textureData->x, textureData->y }, { textureData->width, textureData->height });
+            sf::Vector2u atlasPos = { (uint32_t)rectangles[index].x, (uint32_t)rectangles[index].y };
+
+            if (!atlasTexture.copy(image, atlasPos, areaToCopy, false))
+            {
+                // throw std::runtime_error("failed to copy");
+                continue;
+            }
+        }
+    }
+
+    fmt::println("{} textures loaded in {:.1f}ms", groupedSprites.size(), timer.elapsedMiliseconds());
+
+    // if (!atlasTexture.saveToFile("ignore/atlas.png"))
+    // {
+    //     throw std::runtime_error("failed saving atlas");
+    // }
+}
+
+sf::Image CellViewer::loadTexture(TexturePack::Page *page)
+{
+    sf::Image texture;
+
+    if (!texture.loadFromMemory(page->png.data(), page->png.size()))
+    {
+        throw std::runtime_error("Failed loading page: " + page->name);
+    }
+
+    return texture;
 }
 
 void CellViewer::preComputeSprites()
@@ -35,8 +131,6 @@ void CellViewer::preComputeSprites()
 
     const float TILE_WIDTH = 128.0f;
     const float TILE_HEIGHT = 64.0f;
-
-    std::unordered_set<int32_t> uniqueSprites = {};
 
     for (auto &square : lotpack.squareMap)
     {
@@ -58,12 +152,6 @@ void CellViewer::preComputeSprites()
             if (textureData == nullptr)
                 continue;
 
-            if (!uniqueSprites.contains(spriteId))
-            {
-                uniqueSprites.insert(spriteId);
-                fmt::println("{},{},{}", textureData->name, textureData->width, textureData->height);
-            }
-
             sf::Sprite sprite = createSprite(textureData);
 
             sf::Vector2i posInSheet = { textureData->x, textureData->y };
@@ -76,8 +164,6 @@ void CellViewer::preComputeSprites()
             renderTiles.push_back({ square.coord.z(), sprite });
         }
     }
-
-    fmt::println("unique sprite: {}", uniqueSprites.size());
 }
 
 sf::Texture *CellViewer::getOrCreateTexture(const std::string &textureName)

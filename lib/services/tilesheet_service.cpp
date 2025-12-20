@@ -22,9 +22,10 @@ TilesheetService::TilesheetService(std::string _gamePath)
 
 TexturePack::Texture *TilesheetService::getTextureByName(const std::string &textureName)
 {
-    if (texturesByName.contains(textureName))
+    auto it = texturesByName.find(textureName);
+    if (it != texturesByName.end())
     {
-        return texturesByName[textureName];
+        return it->second;
     }
 
     return nullptr;
@@ -32,9 +33,10 @@ TexturePack::Texture *TilesheetService::getTextureByName(const std::string &text
 
 TexturePack::Page *TilesheetService::getPageByName(const std::string &name)
 {
-    if (pagesByName.contains(name))
+    auto it = pagesByName.find(name);
+    if (it != pagesByName.end())
     {
-        return pagesByName[name];
+        return it->second;
     }
 
     return nullptr;
@@ -42,9 +44,17 @@ TexturePack::Page *TilesheetService::getPageByName(const std::string &name)
 
 TexturePack::Page *TilesheetService::getPageByTextureName(const std::string &textureName)
 {
-    if (textureToPageName.contains(textureName) && pagesByName.contains(textureToPageName[textureName]))
+    auto textureIt = textureToPageName.find(textureName);
+
+    if (textureIt == textureToPageName.end())
+        return nullptr;
+
+    auto pageName = textureIt->second;
+    auto pageIt = pagesByName.find(pageName);
+
+    if (pageIt != pagesByName.end())
     {
-        return pagesByName[textureToPageName[textureName]];
+        return pageIt->second;
     }
 
     return nullptr;
@@ -97,11 +107,6 @@ void TilesheetService::readTexturePacks()
         "Tiles2x.floor.pack",
         "Tiles2x.pack",
     };
-
-    texturePacks = std::vector<TexturePack>{};
-    textureToPageName = std::unordered_map<std::string, std::string>{};
-    texturesByName = std::unordered_map<std::string, TexturePack::Texture *>{};
-    pagesByName = std::unordered_map<std::string, TexturePack::Page *>{};
 
     fmt::println("Loading texturePacks...");
 

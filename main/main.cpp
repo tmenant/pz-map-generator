@@ -11,8 +11,8 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 
-#include "gui/views/cell_viewer/cell_viewer.h"
 #include "constants.h"
+#include "gui/views/cell_viewer/cell_viewer.h"
 #include "platform.h"
 #include "services/map_files_service.h"
 #include "services/tilesheet_service.h"
@@ -20,7 +20,6 @@
 #include <fmt/format.h>
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
-
 
 void main_window()
 {

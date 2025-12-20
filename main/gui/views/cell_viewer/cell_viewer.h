@@ -67,5 +67,9 @@ public:
 
     void handleEvents(const sf::Event &event, sf::RenderWindow &window);
     void update(sf::RenderWindow &window);
+
+    void packCellSprites();
     void preComputeSprites();
+
+    sf::Image loadTexture(TexturePack::Page *page);
 };
