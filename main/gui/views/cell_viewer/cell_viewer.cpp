@@ -4,7 +4,6 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cstdint>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -16,6 +15,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include "algorithms/rect_pack/rect_structs.h"
 #include "algorithms/rect_pack/rectpack_2d.h"
 #include "files/texturepack.h"
 #include "gui/components/debug_panel.h"
@@ -44,8 +44,10 @@ void CellViewer::packCellSprites()
     auto tilesCount = lotheader.tileNames.size();
 
     std::unordered_map<TexturePack::Page *, std::vector<size_t>> groupedSprites = {};
-    std::vector<rectpack2D::rect_xywh> rectangles(tilesCount);
     std::vector<sf::Image> sprites(tilesCount);
+
+    rectangles.resize(tilesCount);
+    spriteDatas.resize(tilesCount, nullptr);
 
     for (size_t i = 0; i < tilesCount; i++)
     {
@@ -71,6 +73,7 @@ void CellViewer::packCellSprites()
 
         groupedSprites[page].push_back(i);
 
+        spriteDatas[i] = textureData;
         rectangles[i] = rectpack2D::rect_xywh(0, 0, textureData->width, textureData->height);
     }
 
@@ -79,8 +82,8 @@ void CellViewer::packCellSprites()
 
     fmt::println("{} tiles packed in {:.3f}ms, AtlasSize = {}x{} ({:.1f}Mo)", tilesCount, timer.elapsedMiliseconds(true), atlasSize.w, atlasSize.h, packedSize);
 
-    sf::Image atlasTexture;
-    atlasTexture.resize({ (uint32_t)atlasSize.w, (uint32_t)atlasSize.h });
+    sf::Image atlasImage;
+    atlasImage.resize({ (uint32_t)atlasSize.w, (uint32_t)atlasSize.h });
 
     for (const auto &entry : groupedSprites)
     {
@@ -97,20 +100,19 @@ void CellViewer::packCellSprites()
             sf::IntRect areaToCopy = sf::IntRect({ textureData->x, textureData->y }, { textureData->width, textureData->height });
             sf::Vector2u atlasPos = { (uint32_t)rectangles[index].x, (uint32_t)rectangles[index].y };
 
-            if (!atlasTexture.copy(image, atlasPos, areaToCopy, false))
+            if (!atlasImage.copy(image, atlasPos, areaToCopy, false))
             {
-                // throw std::runtime_error("failed to copy");
-                continue;
+                throw std::runtime_error("failed to copy");
             }
         }
     }
 
-    fmt::println("{} textures loaded in {:.1f}ms", groupedSprites.size(), timer.elapsedMiliseconds());
+    if (!atlasTexture.loadFromImage(atlasImage))
+    {
+        throw std::runtime_error("failed loading atlas.");
+    }
 
-    // if (!atlasTexture.saveToFile("ignore/atlas.png"))
-    // {
-    //     throw std::runtime_error("failed saving atlas");
-    // }
+    fmt::println("{} textures loaded in {:.1f}ms", groupedSprites.size(), timer.elapsedMiliseconds());
 }
 
 sf::Image CellViewer::loadTexture(TexturePack::Page *page)
@@ -146,16 +148,16 @@ void CellViewer::preComputeSprites()
 
         for (int32_t &spriteId : square.tiles)
         {
-            std::string &spriteName = lotheader.tileNames[spriteId];
-            TexturePack::Texture *textureData = tilesheetService->getTextureByName(spriteName);
+            TexturePack::Texture *textureData = spriteDatas[spriteId];
 
             if (textureData == nullptr)
                 continue;
 
-            sf::Sprite sprite = createSprite(textureData);
+            sf::Sprite sprite(atlasTexture);
+            rectpack2D::rect_xywh &rectangle = rectangles[spriteId];
 
-            sf::Vector2i posInSheet = { textureData->x, textureData->y };
-            sf::Vector2i texSize = { textureData->width, textureData->height };
+            sf::Vector2i posInSheet = { rectangle.x, rectangle.y };
+            sf::Vector2i texSize = { rectangle.w, rectangle.h };
 
             sprite.setTextureRect(sf::IntRect(posInSheet, texSize));
             sprite.setOrigin({ 0, 0 });
@@ -164,46 +166,6 @@ void CellViewer::preComputeSprites()
             renderTiles.push_back({ square.coord.z(), sprite });
         }
     }
-}
-
-sf::Texture *CellViewer::getOrCreateTexture(const std::string &textureName)
-{
-    TexturePack::Page *page = tilesheetService->getPageByTextureName(textureName);
-    if (!page)
-    {
-        texturesByName[page->name] = std::nullopt;
-        return nullptr;
-    }
-
-    auto it = texturesByName.find(page->name);
-    if (it != texturesByName.end())
-    {
-        return it->second.has_value() ? &it->second.value() : nullptr;
-    }
-
-    sf::Texture texture;
-    if (!texture.loadFromMemory(page->png.data(), page->png.size()))
-    {
-        texturesByName[page->name] = std::nullopt;
-        return nullptr;
-    }
-
-    texturesByName[page->name] = texture;
-    return &texturesByName[page->name].value();
-}
-
-sf::Sprite CellViewer::createSprite(TexturePack::Texture *textureData)
-{
-    assert(textureData != nullptr);
-
-    sf::Texture *texture = getOrCreateTexture(textureData->name);
-
-    if (texture == nullptr)
-        throw std::runtime_error("sprite not found");
-
-    sf::Sprite sprite(*texture);
-
-    return sprite;
 }
 
 void CellViewer::handleEvents(const sf::Event &event, sf::RenderWindow &window)
@@ -252,11 +214,11 @@ void CellViewer::handleEvents(const sf::Event &event, sf::RenderWindow &window)
     {
         if (keyPressed->code == sf::Keyboard::Key::Up)
         {
-            currentLayer = Math::fastMin(currentLayer + 1, lotheader.maxLayer + 1);
+            viewState.currentLayer = Math::fastMin(viewState.currentLayer + 1, lotheader.maxLayer + 1);
         }
         else if (keyPressed->code == sf::Keyboard::Key::Down)
         {
-            currentLayer = Math::fastMax(currentLayer - 1, lotheader.minLayer + 1);
+            viewState.currentLayer = Math::fastMax(viewState.currentLayer - 1, lotheader.minLayer + 1);
         }
     }
 }
@@ -266,17 +228,21 @@ void CellViewer::update(sf::RenderWindow &window)
     viewState.applyTo(*view, window);
     window.setView(*view);
 
+    int drawCalls = 0;
+
     Timer timer = Timer::start();
 
     for (auto &renderTile : renderTiles)
     {
-        if (renderTile.layer <= currentLayer)
+        if (renderTile.layer <= viewState.currentLayer)
         {
             window.draw(renderTile.sprite);
+            drawCalls++;
         }
     }
 
-    firstFrame = false;
+    viewState.firstFrame = false;
 
     debugPanel.setFPS(1000 / timer.elapsedMiliseconds());
+    debugPanel.setDrawCalls(drawCalls);
 }
