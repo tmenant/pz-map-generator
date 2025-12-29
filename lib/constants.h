@@ -16,7 +16,7 @@ namespace constants
 
     constexpr char LINE_END = 0xA;
 
-    const std::string GAME_PATH_B42 = "C:/SteamLibrary/steamapps/common/ProjectZomboidB42";
+    const std::string GAME_PATH_B42 = "C:/Program Files (x86)/Steam/steamapps/common/ProjectZomboid";
 
     constexpr std::string_view LOTHEADER_EXT = ".lotheader";
     constexpr std::string_view LOTPACK_EXT = ".lotpack";

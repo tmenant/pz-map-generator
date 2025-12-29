@@ -1,15 +1,13 @@
 @echo off
 
-set LOGFILE=%TEMP%\zomboid_build_log.tests.txt
-
-call "%~dp0\build.bat" > "%LOGFILE%" 2>&1
+call "%~dp0\build.bat"
 
 if %ERRORLEVEL% neq 0 (
     type "%LOGFILE%"
     exit /b 1
 )
 
-del "%LOGFILE%"
+cls
 
 build\mingw-debug\tests.exe %*
 

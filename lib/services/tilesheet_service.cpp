@@ -99,7 +99,6 @@ void TilesheetService::readTexturePacks()
     std::string texturesDirectory = gamePath + "/media/texturepacks";
 
     const auto texturePackFiles = {
-        "Erosion.pack",
         "ApCom.pack",
         "RadioIcons.pack",
         "ApComUI.pack",
