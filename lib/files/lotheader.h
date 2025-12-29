@@ -61,7 +61,7 @@ public:
     static LotHeader read(const std::string &filename);
     static LotHeader read(const BytesBuffer &buffer, Vector2i position);
 
-    static Vector2i getPositionFromFilename(std::string filename);
+    static Vector2i getPositionFromFilename(const std::string &filename);
 
 private:
     static std::vector<std::string> readTileNames(const BytesBuffer &buffer, size_t &offset);

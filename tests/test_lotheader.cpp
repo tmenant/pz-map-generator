@@ -62,6 +62,13 @@ TEST_CASE("getPositionFromFilename")
         CHECK(pos.y == 67890);
     }
 
+    SUBCASE("File path")
+    {
+        Vector2i pos = LotHeader::getPositionFromFilename("Path/with/number (x86)/To/32_64.lotheader");
+        CHECK(pos.x == 32);
+        CHECK(pos.y == 64);
+    }
+
     SUBCASE("File without underscore")
     {
         CHECK_THROWS_AS(LotHeader::getPositionFromFilename("1020.lotheader"), std::runtime_error);
