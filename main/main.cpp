@@ -6,7 +6,9 @@
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <atomic>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include <TGUI/Backend/SFML-Graphics.hpp>
@@ -21,28 +23,52 @@
 #include <fmt/format.h>
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
+#include <thread>
+
+struct AppContext
+{
+    std::atomic<bool> isDone = false;
+    std::string currentStatus;
+    std::unique_ptr<TilesheetService> tilesheetService;
+    std::unique_ptr<MapFilesService> mapFileService;
+};
 
 void main_window()
 {
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "PZ Map Generator");
     sf::View view = window.getDefaultView();
+    tgui::Gui gui{ window };
 
     platform::windows::setWindowDarkMode(window);
     window.setFramerateLimit(60);
 
-    tgui::Gui gui{ window };
-    TilesheetService tilesheetService(constants::GAME_PATH);
-    MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
+    auto loadingLabel = tgui::Label::create("Chargement des services PZ...");
+    loadingLabel->setPosition("50%", "50%");
+    loadingLabel->setOrigin(0.5f, 0.5f);
+    gui.add(loadingLabel);
 
-    // TilesBrowser tilesBrowser(gui, window, tilesheetService);
-    CellViewer cellViewer(&view, &mapFileService, &tilesheetService, gui, 31, 45);
+    AppContext ctx;
+    std::thread loadingThread([&ctx]()
+    {
+        ctx.tilesheetService = std::make_unique<TilesheetService>(constants::GAME_PATH);
+        ctx.mapFileService = std::make_unique<MapFilesService>(constants::GAME_PATH, MapNames::Muldraugh);
+        ctx.isDone = true;
+    });
+
+    std::unique_ptr<CellViewer> cellViewer = nullptr;
+
+    bool initialized = false;
 
     while (window.isOpen())
     {
         while (const std::optional event = window.pollEvent())
         {
             gui.handleEvent(*event);
-            cellViewer.handleEvents(*event, window);
+
+            if (ctx.isDone && initialized)
+            {
+                cellViewer->handleEvents(*event, window);
+            }
 
             if (event->is<sf::Event::Closed>())
             {
@@ -50,7 +76,6 @@ void main_window()
             }
             else if (const auto *resized = event->getIf<sf::Event::Resized>())
             {
-                // sf::FloatRect visibleArea({ 0.f, 0.f }, { (float)resized->size.x, (float)resized->size.y });
                 view.setSize({ (float)resized->size.x, (float)resized->size.y });
                 window.setView(view);
             }
@@ -59,11 +84,26 @@ void main_window()
         // viewport drawings
         window.clear(Colors::backgroundColor.sfml());
 
-        // tilesBrowser.update(window);
-        cellViewer.update(window);
+        if (ctx.isDone && !initialized)
+        {
+            if (loadingThread.joinable()) loadingThread.join();
+
+            cellViewer = std::make_unique<CellViewer>(&view, ctx.mapFileService.get(), ctx.tilesheetService.get(), gui, 31, 45);
+            gui.remove(loadingLabel);
+            initialized = true;
+        }
+        else if (ctx.isDone)
+        {
+            cellViewer->update(window);
+        }
 
         gui.draw();
         window.display();
+    }
+
+    if (loadingThread.joinable())
+    {
+        loadingThread.join();
     }
 }
 
