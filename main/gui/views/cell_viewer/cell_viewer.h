@@ -68,6 +68,4 @@ public:
 
     void preComputeSprites();
     void packCellSprites();
-
-    sf::Image loadTexture(TexturePack::Page *page);
 };

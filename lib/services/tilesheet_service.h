@@ -5,6 +5,7 @@
 
 #include "files/texturepack.h"
 #include "files/tiledefinition.h"
+#include "threading/loading_payload.h"
 
 class TilesheetService
 {
@@ -18,11 +19,9 @@ public:
     std::unordered_map<std::string, TexturePack::Texture *> texturesByName;
     std::unordered_map<std::string, TileDefinition::TileSheet *> tileSheetsByName;
     std::unordered_map<std::string, TileDefinition::TileData *> tilesDefByName;
-
     std::unordered_map<std::string, std::string> textureToPageName;
 
-    TilesheetService() = default;
-    TilesheetService(std::string _gamePath);
+    TilesheetService(std::string _gamePath, LoadingPayload &loadingPayload);
 
     TexturePack::Texture *getTextureByName(const std::string &textureName);
     TexturePack::Page *getPageByTextureName(const std::string &textureName);

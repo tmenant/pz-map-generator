@@ -1,10 +1,12 @@
 #include <filesystem>
+#include <stdexcept>
 #include <vector>
 
 #include "exceptions.h"
 #include "io/binary_reader.h"
 #include "io/file_reader.h"
 #include "texturepack.h"
+#include "types.h"
 
 TexturePack TexturePack::read(const std::filesystem::path &path)
 {
@@ -54,7 +56,7 @@ std::vector<TexturePack::Page> TexturePack::readPages(const BytesBuffer &buffer,
         page.version = version;
         page.name = BinaryReader::readStringWithLength(buffer, offset);
         page.textures = TexturePack::readTextures(buffer, offset);
-        page.png = TexturePack::readPNG(buffer, version, offset);
+        page.image = TexturePack::readPNG(buffer, version, offset);
 
         pages[i] = page;
     }
@@ -62,20 +64,30 @@ std::vector<TexturePack::Page> TexturePack::readPages(const BytesBuffer &buffer,
     return pages;
 }
 
-BytesBuffer TexturePack::readPNG(const BytesBuffer &buffer, int32_t version, size_t &offset)
+sf::Image TexturePack::readPNG(const BytesBuffer &buffer, int32_t version, size_t &offset)
 {
+    BytesBuffer png;
+
     if (version == 0)
     {
-        return BinaryReader::readUntil(buffer, { 0xEF, 0xBE, 0xAD, 0xDE }, offset);
+        png = BinaryReader::readUntil(buffer, { 0xEF, 0xBE, 0xAD, 0xDE }, offset);
     }
     else if (version == 1)
     {
-        return BinaryReader::readBytesWithLength(buffer, offset);
+        png = BinaryReader::readBytesWithLength(buffer, offset);
     }
     else
     {
         throw std::runtime_error("Unsupported texturepack version: " + std::to_string(version));
     }
+
+    sf::Image image;
+    if (!image.loadFromMemory(png.data(), png.size()))
+    {
+        throw std::runtime_error("failed loading texture.");
+    }
+
+    return image;
 }
 
 std::vector<TexturePack::Texture> TexturePack::readTextures(const BytesBuffer &buffer, size_t &offset)

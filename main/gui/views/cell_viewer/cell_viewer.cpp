@@ -26,7 +26,6 @@
 
 #include "constants.h"
 #include "timer.h"
-#include "types.h"
 
 CellViewer::CellViewer(sf::View *view, MapFilesService *mapFileService, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y) :
         debugPanel(gui)
@@ -92,7 +91,7 @@ void CellViewer::packCellSprites()
 
     for (const auto &entry : groupedSprites)
     {
-        sf::Image image = loadTexture(entry.first);
+        sf::Image &image = entry.first->image;
 
         for (const auto &index : entry.second)
         {
@@ -118,18 +117,6 @@ void CellViewer::packCellSprites()
     }
 
     fmt::println("{} textures loaded in {:.1f}ms", groupedSprites.size(), timer.elapsedMiliseconds());
-}
-
-sf::Image CellViewer::loadTexture(TexturePack::Page *page)
-{
-    sf::Image texture;
-
-    if (!texture.loadFromMemory(page->png.data(), page->png.size()))
-    {
-        throw std::runtime_error("Failed loading page: " + page->name);
-    }
-
-    return texture;
 }
 
 void CellViewer::preComputeSprites()

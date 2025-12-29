@@ -12,11 +12,14 @@
 
 namespace fs = std::filesystem;
 
-TilesheetService::TilesheetService(std::string _gamePath)
+TilesheetService::TilesheetService(std::string _gamePath, LoadingPayload &loadingPayload)
 {
     gamePath = _gamePath;
 
+    loadingPayload.updateMessage("Loading tile definitions");
     readTileDefinitions();
+
+    loadingPayload.updateMessage("Loading texture packs");
     readTexturePacks();
 }
 

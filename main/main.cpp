@@ -14,12 +14,14 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 
+#include "TGUI/Widgets/Picture.hpp"
 #include "constants.h"
 #include "gui/views/cell_viewer/cell_viewer.h"
 #include "platform.h"
 #include "services/map_files_service.h"
 #include "services/tilesheet_service.h"
 #include "theme.h"
+#include "threading/loading_payload.h"
 #include <fmt/format.h>
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
@@ -27,10 +29,12 @@
 
 struct AppContext
 {
+    std::atomic<int> progression = 0;
     std::atomic<bool> isDone = false;
     std::string currentStatus;
     std::unique_ptr<TilesheetService> tilesheetService;
     std::unique_ptr<MapFilesService> mapFileService;
+    LoadingPayload loadingPayload;
 };
 
 void main_window()
@@ -42,15 +46,22 @@ void main_window()
     platform::windows::setWindowDarkMode(window);
     window.setFramerateLimit(60);
 
+    auto loadingSpinner = tgui::Picture::create("ignore/spinner.png");
+    loadingSpinner->setPosition("45%", "50%");
+    loadingSpinner->setOrigin(0.5f, 0.5f);
+    loadingSpinner->setSize(20, 20);
+    gui.add(loadingSpinner);
+
     auto loadingLabel = tgui::Label::create("Chargement des services PZ...");
     loadingLabel->setPosition("50%", "50%");
     loadingLabel->setOrigin(0.5f, 0.5f);
+    loadingLabel->getRenderer()->setTextColor(Colors::fontColor.tgui());
     gui.add(loadingLabel);
 
     AppContext ctx;
     std::thread loadingThread([&ctx]()
     {
-        ctx.tilesheetService = std::make_unique<TilesheetService>(constants::GAME_PATH);
+        ctx.tilesheetService = std::make_unique<TilesheetService>(constants::GAME_PATH, ctx.loadingPayload);
         ctx.mapFileService = std::make_unique<MapFilesService>(constants::GAME_PATH, MapNames::Muldraugh);
         ctx.isDone = true;
     });
@@ -90,11 +101,17 @@ void main_window()
 
             cellViewer = std::make_unique<CellViewer>(&view, ctx.mapFileService.get(), ctx.tilesheetService.get(), gui, 31, 45);
             gui.remove(loadingLabel);
+            gui.remove(loadingSpinner);
             initialized = true;
         }
         else if (ctx.isDone)
         {
             cellViewer->update(window);
+        }
+        else
+        {
+            loadingLabel->setText(ctx.loadingPayload.getMessage());
+            loadingSpinner->setRotation(loadingSpinner->getRotation() + 5);
         }
 
         gui.draw();

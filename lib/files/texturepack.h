@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics/Image.hpp>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -27,8 +28,8 @@ public:
         int32_t version;
         std::string name;
         uint32_t hasAlpha;
-        BytesBuffer png;
         std::vector<Texture> textures;
+        sf::Image image;
     };
 
     std::string name;
@@ -41,7 +42,7 @@ public:
     static TexturePack read(const std::filesystem::path &path);
     static TexturePack read(const std::string &name, const BytesBuffer &buffer);
     static int32_t readVersion(const BytesBuffer &buffer, std::string magic, size_t &offset);
-    static BytesBuffer readPNG(const BytesBuffer &buffer, int32_t version, size_t &offset);
+    static sf::Image readPNG(const BytesBuffer &buffer, int32_t version, size_t &offset);
     static std::vector<Page> readPages(const BytesBuffer &buffer, int32_t version, size_t &offset);
     static std::vector<Texture> readTextures(const BytesBuffer &buffer, size_t &offset);
 };
