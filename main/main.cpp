@@ -16,21 +16,26 @@
 
 #include "TGUI/Widgets/Picture.hpp"
 #include "constants.h"
+#include "core/atlas_datas.h"
 #include "gui/views/cell_viewer/cell_viewer.h"
+#include "math/vector2i.h"
 #include "platform.h"
 #include "services/map_files_service.h"
 #include "services/tilesheet_service.h"
 #include "theme.h"
 #include "threading/loading_payload.h"
+#include "timer.h"
+#include <fmt/base.h>
 #include <fmt/format.h>
 #include <lodepng.h>
 #include <cpptrace/from_current.hpp>
 #include <thread>
+#include <vector>
 
 struct AppContext
 {
     std::atomic<int> progression = 0;
-    std::atomic<bool> isDone = false;
+    std::atomic<bool> isLoaded = false;
     std::string currentStatus;
     std::unique_ptr<TilesheetService> tilesheetService;
     std::unique_ptr<MapFilesService> mapFileService;
@@ -63,7 +68,7 @@ void main_window()
     {
         ctx.tilesheetService = std::make_unique<TilesheetService>(constants::GAME_PATH, ctx.loadingPayload);
         ctx.mapFileService = std::make_unique<MapFilesService>(constants::GAME_PATH, MapNames::Muldraugh);
-        ctx.isDone = true;
+        ctx.isLoaded = true;
     });
 
     std::unique_ptr<CellViewer> cellViewer = nullptr;
@@ -76,7 +81,7 @@ void main_window()
         {
             gui.handleEvent(*event);
 
-            if (ctx.isDone && initialized)
+            if (ctx.isLoaded && initialized)
             {
                 cellViewer->handleEvents(*event, window);
             }
@@ -95,7 +100,7 @@ void main_window()
         // viewport drawings
         window.clear(Colors::backgroundColor.sfml());
 
-        if (ctx.isDone && !initialized)
+        if (ctx.isLoaded && !initialized)
         {
             if (loadingThread.joinable()) loadingThread.join();
 
@@ -104,7 +109,7 @@ void main_window()
             gui.remove(loadingSpinner);
             initialized = true;
         }
-        else if (ctx.isDone)
+        else if (ctx.isLoaded)
         {
             cellViewer->update(window);
         }
@@ -124,11 +129,47 @@ void main_window()
     }
 }
 
+void test_atlas_packing()
+{
+    // auto loadingPayload = LoadingPayload();
+    // auto tilesheetService = TilesheetService(constants::GAME_PATH_B42, loadingPayload);
+
+    auto mapDirectory = constants::GAME_PATH_B42 + "/media/maps/" + MapNames::Muldraugh;
+    auto timer = Timer::start();
+
+    AtlasGraph atlasGraph;
+
+    for (auto &entry : std::filesystem::directory_iterator(mapDirectory))
+    {
+        std::filesystem::path path = entry.path();
+
+        if (path.extension().string() != constants::LOTHEADER_EXT)
+            continue;
+
+        LotHeader header = LotHeader::read(path.string());
+
+        AtlasDatas atlasData;
+
+        for (const auto &tilename : header.tileNames)
+        {
+            atlasData.hashes.emplace_back(Math::hashFnv1a(tilename));
+        }
+
+        atlasGraph.addNode(header.position.hashcode(), atlasData);
+    }
+
+    atlasGraph.buildGraph();
+
+    auto memory = platform::windows::getMemoryUsage() / 1024 / 1024;
+
+    fmt::println("{} files parsed in {}ms, memory: {}MB", atlasGraph.size(), timer.elapsedMiliseconds(), memory);
+}
+
 int main()
 {
     CPPTRACE_TRY
     {
-        main_window();
+        test_atlas_packing();
     }
     CPPTRACE_CATCH(const std::exception &e)
     {
