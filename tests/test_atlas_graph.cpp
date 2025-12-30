@@ -7,7 +7,7 @@ TEST_CASE("Atlas Datas contains")
     AtlasDatas atlas1;
     AtlasDatas atlas2;
 
-    SUBCASE("Sous-sequence simple")
+    SUBCASE("Simple subsequence")
     {
         atlas1.hashes = { 0, 1, 2, 3 };
         atlas2.hashes = { 1, 3 };
@@ -15,7 +15,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Sous-sequence identique")
+    SUBCASE("Identical subsequence")
     {
         atlas1.hashes = { 5, 6, 7 };
         atlas2.hashes = { 5, 6, 7 };
@@ -23,7 +23,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Sous-sequence avec un seul element")
+    SUBCASE("Single-element subsequence")
     {
         atlas1.hashes = { 10, 20, 30 };
         atlas2.hashes = { 20 };
@@ -31,7 +31,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Ordre incorrect")
+    SUBCASE("Incorrect order")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = { 3, 2 };
@@ -39,7 +39,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Element manquant")
+    SUBCASE("Missing element")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = { 2, 4 };
@@ -47,7 +47,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Sous-sequence plus longue que la source")
+    SUBCASE("Subsequence longer than source")
     {
         atlas1.hashes = { 1, 2 };
         atlas2.hashes = { 1, 2, 3 };
@@ -55,7 +55,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Sous-sequence non contigue")
+    SUBCASE("Non-contiguous subsequence")
     {
         atlas1.hashes = { 1, 4, 7, 9, 12 };
         atlas2.hashes = { 4, 9, 12 };
@@ -63,7 +63,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Gestion des doublons")
+    SUBCASE("Duplicate handling")
     {
         atlas1.hashes = { 1, 2, 2, 3 };
         atlas2.hashes = { 2, 3 };
@@ -71,7 +71,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Doublons insuffisants")
+    SUBCASE("Insufficient duplicates")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = { 2, 2 };
@@ -79,7 +79,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Sous-sequence vide")
+    SUBCASE("Empty subsequence")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = {};
@@ -87,7 +87,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Source vide")
+    SUBCASE("Empty source")
     {
         atlas1.hashes = {};
         atlas2.hashes = { 1 };
@@ -123,6 +123,13 @@ TEST_SUITE("Atlas Graph")
         CHECK(graph.getNodeById(3)->parent == graph.getNodeById(1));
         CHECK(graph.getNodeById(4)->parent == graph.getNodeById(0));
         CHECK(graph.getNodeById(5)->parent == nullptr);
+
+        CHECK(graph.getRootNode(graph.getNodeById(0)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(1)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(2)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(3)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(4)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(5)) == graph.getNodeById(5));
     }
 
     TEST_CASE("linear chain")
@@ -146,6 +153,11 @@ TEST_SUITE("Atlas Graph")
         CHECK(graph.getNodeById(1)->parent == graph.getNodeById(0));
         CHECK(graph.getNodeById(2)->parent == graph.getNodeById(1));
         CHECK(graph.getNodeById(3)->parent == graph.getNodeById(2));
+
+        CHECK(graph.getRootNode(graph.getNodeById(0)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(1)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(2)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(3)) == graph.getNodeById(0));
     }
 
     TEST_CASE("multiple roots")
@@ -169,9 +181,14 @@ TEST_SUITE("Atlas Graph")
         CHECK(graph.getNodeById(0)->parent == nullptr);
         CHECK(graph.getNodeById(1)->parent == graph.getNodeById(0));
         CHECK(graph.getNodeById(2)->parent == graph.getNodeById(1));
-
         CHECK(graph.getNodeById(3)->parent == nullptr);
         CHECK(graph.getNodeById(4)->parent == graph.getNodeById(3));
+
+        CHECK(graph.getRootNode(graph.getNodeById(0)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(1)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(2)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(3)) == graph.getNodeById(3));
+        CHECK(graph.getRootNode(graph.getNodeById(4)) == graph.getNodeById(3));
     }
 
     TEST_CASE("branching")
@@ -194,12 +211,16 @@ TEST_SUITE("Atlas Graph")
         graph.buildGraph();
 
         CHECK(graph.getNodeById(0)->parent == nullptr);
-
         CHECK(graph.getNodeById(1)->parent == graph.getNodeById(0));
         CHECK(graph.getNodeById(2)->parent == graph.getNodeById(0));
-
         CHECK(graph.getNodeById(3)->parent == graph.getNodeById(1));
         CHECK(graph.getNodeById(4)->parent == graph.getNodeById(2));
+
+        CHECK(graph.getRootNode(graph.getNodeById(0)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(1)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(2)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(3)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(4)) == graph.getNodeById(0));
     }
 
     TEST_CASE("same size no inclusion")
@@ -218,26 +239,10 @@ TEST_SUITE("Atlas Graph")
         CHECK(graph.getNodeById(0)->parent == nullptr);
         CHECK(graph.getNodeById(1)->parent == nullptr);
         CHECK(graph.getNodeById(2)->parent == nullptr);
-    }
 
-    TEST_CASE("minimal parent selection")
-    {
-        /*
-        [0]
-         └── [1]
-              └── [2]
-        */
-        AtlasGraph graph;
-
-        graph.addNode(0, AtlasDatas({ 0, 1, 2, 3 }));
-        graph.addNode(1, AtlasDatas({ 0, 1, 2 }));
-        graph.addNode(2, AtlasDatas({ 0, 1 }));
-
-        graph.buildGraph();
-
-        CHECK(graph.getNodeById(0)->parent == nullptr);
-        CHECK(graph.getNodeById(1)->parent == graph.getNodeById(0));
-        CHECK(graph.getNodeById(2)->parent == graph.getNodeById(1));
+        CHECK(graph.getRootNode(graph.getNodeById(0)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(1)) == graph.getNodeById(1));
+        CHECK(graph.getRootNode(graph.getNodeById(2)) == graph.getNodeById(2));
     }
 
     TEST_CASE("orphan leaf")
@@ -258,5 +263,9 @@ TEST_SUITE("Atlas Graph")
         CHECK(graph.getNodeById(0)->parent == nullptr);
         CHECK(graph.getNodeById(1)->parent == graph.getNodeById(0));
         CHECK(graph.getNodeById(2)->parent == nullptr);
+
+        CHECK(graph.getRootNode(graph.getNodeById(0)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(1)) == graph.getNodeById(0));
+        CHECK(graph.getRootNode(graph.getNodeById(2)) == graph.getNodeById(2));
     }
 }

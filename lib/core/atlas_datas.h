@@ -5,6 +5,8 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -61,7 +63,31 @@ public:
     AtlasDatas *getNodeById(uint32_t id)
     {
         auto it = atlasNodes.find(id);
-        return it != atlasNodes.end() ? &it->second : nullptr;
+
+        if (it == atlasNodes.end())
+        {
+            throw std::runtime_error("id not found: " + std::to_string(id));
+        }
+
+        return &it->second;
+    }
+
+    AtlasDatas *getRootNode(AtlasDatas *currentNode)
+    {
+        assert(currentNode != nullptr);
+
+        if (currentNode->parent == nullptr)
+        {
+            return currentNode;
+        }
+
+        return getRootNode(currentNode->parent);
+    }
+
+    AtlasDatas *getRootNode(uint32_t childId)
+    {
+        auto currentNode = getNodeById(childId);
+        return getRootNode(currentNode);
     }
 
     size_t size()
