@@ -5,6 +5,7 @@
 #include "exceptions.h"
 #include "io/binary_reader.h"
 #include "io/file_reader.h"
+#include "math/math.h"
 #include "texturepack.h"
 #include "types.h"
 
@@ -102,6 +103,7 @@ std::vector<TexturePack::Texture> TexturePack::readTextures(const BytesBuffer &b
         Texture texture{};
 
         texture.name = BinaryReader::readStringWithLength(buffer, offset);
+        texture.hashcode = Math::hashFnv1a(texture.name);
         texture.x = BinaryReader::readInt32(buffer, offset);
         texture.y = BinaryReader::readInt32(buffer, offset);
         texture.width = BinaryReader::readInt32(buffer, offset);

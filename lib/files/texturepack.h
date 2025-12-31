@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics/Image.hpp>
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@ public:
     struct Texture
     {
         std::string name;
+        uint32_t hashcode;
         int32_t x;
         int32_t y;
         int32_t width;
