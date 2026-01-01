@@ -155,11 +155,19 @@ I implemented a graph-based algorithm, pre-computed at map load:
 
 By extending this recursively, I create a dependency graph where only the root nodes generate dynamic atlases, while leaf nodes reuse parent atlases to render their sprites.
 
-# Objectives for January 2026
+## January 2026
 
-- implementing dynamic cells viewers
-- improving tiles browser
-- improving separation between cli and gui: allow to easily show tiles browser without separate executable
-- implementing automated extraction of buildings
-- implementing buildings viewer
-- drafting pois injector architecture
+### Refactoring CLI architecture 
+- need to manage multiple windows within the same executable
+- need to create small entry points quickly for debugging
+- need an extensible architecture
+- anticipating future dual mode: cli vs gui
+
+### Roadmap
+- [x] improving separation between cli and gui: allow to easily show tiles browser without separate executable
+- [ ] create a main gui architecture, allowing to create multiple windows from the main gui
+- [ ] implementing dynamic cells viewers
+- [ ] implementing automated extraction of buildings
+- [ ] implementing buildings viewer
+- [ ] drafting pois injector architecture
+- [ ] improving tiles browser

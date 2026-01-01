@@ -25,6 +25,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tgui)
 
+#CLI11
+include(FetchContent)
+FetchContent_Declare(
+  cli11
+  GIT_REPOSITORY https://github.com/CLIUtils/CLI11
+  GIT_TAG        v2.6.1
+)
+FetchContent_MakeAvailable(cli11)
+
 # Library
 file(GLOB_RECURSE LIB_SOURCES "lib/*.cpp")
 add_library(pzlib STATIC ${LIB_SOURCES})
@@ -36,6 +45,7 @@ target_link_libraries(pzlib PUBLIC
     SFML::System
     SFML::Graphics
     SFML::Window
+    CLI11::CLI11
     tgui
     dwmapi
 )
