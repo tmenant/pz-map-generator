@@ -2,12 +2,12 @@
 #include <doctest/doctest.h>
 #include <fmt/base.h>
 
-TEST_CASE("Atlas Datas contains")
+TEST_SUITE("Atlas Node contains")
 {
     AtlasGraph::Node atlas1;
     AtlasGraph::Node atlas2;
 
-    SUBCASE("Simple subsequence")
+    TEST_CASE("Simple subsequence")
     {
         atlas1.hashes = { 0, 1, 2, 3 };
         atlas2.hashes = { 1, 3 };
@@ -15,7 +15,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Identical subsequence")
+    TEST_CASE("Identical subsequence")
     {
         atlas1.hashes = { 5, 6, 7 };
         atlas2.hashes = { 5, 6, 7 };
@@ -23,7 +23,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Single-element subsequence")
+    TEST_CASE("Single-element subsequence")
     {
         atlas1.hashes = { 10, 20, 30 };
         atlas2.hashes = { 20 };
@@ -31,7 +31,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Incorrect order")
+    TEST_CASE("Incorrect order")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = { 3, 2 };
@@ -39,7 +39,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Missing element")
+    TEST_CASE("Missing element")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = { 2, 4 };
@@ -47,7 +47,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Subsequence longer than source")
+    TEST_CASE("Subsequence longer than source")
     {
         atlas1.hashes = { 1, 2 };
         atlas2.hashes = { 1, 2, 3 };
@@ -55,7 +55,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Non-contiguous subsequence")
+    TEST_CASE("Non-contiguous subsequence")
     {
         atlas1.hashes = { 1, 4, 7, 9, 12 };
         atlas2.hashes = { 4, 9, 12 };
@@ -63,7 +63,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Duplicate handling")
+    TEST_CASE("Duplicate handling")
     {
         atlas1.hashes = { 1, 2, 2, 3 };
         atlas2.hashes = { 2, 3 };
@@ -71,15 +71,15 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Insufficient duplicates")
+    TEST_CASE("Insufficient duplicates")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = { 2, 2 };
 
-        CHECK(atlas1.contains(&atlas2));
+        CHECK_FALSE(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Empty subsequence")
+    TEST_CASE("Empty subsequence")
     {
         atlas1.hashes = { 1, 2, 3 };
         atlas2.hashes = {};
@@ -87,7 +87,7 @@ TEST_CASE("Atlas Datas contains")
         CHECK(atlas1.contains(&atlas2));
     }
 
-    SUBCASE("Empty source")
+    TEST_CASE("Empty source")
     {
         atlas1.hashes = {};
         atlas2.hashes = { 1 };
@@ -96,8 +96,20 @@ TEST_CASE("Atlas Datas contains")
     }
 }
 
-TEST_SUITE("Atlas Graph")
+TEST_SUITE("Graph construction")
 {
+    TEST_CASE("nodes insertion")
+    {
+        AtlasGraph graph;
+
+        graph.addNode(0, AtlasGraph::Node({ 2, 1, 0, 1, 1 }));
+
+        CHECK(graph.getNodeById(0)->hashes.size() == 3);
+        CHECK(graph.getNodeById(0)->hashes[0] == 0);
+        CHECK(graph.getNodeById(0)->hashes[1] == 1);
+        CHECK(graph.getNodeById(0)->hashes[2] == 2);
+    }
+
     TEST_CASE("single root with multiple branches and orphans")
     {
         /*

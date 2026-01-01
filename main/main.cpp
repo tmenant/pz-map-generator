@@ -160,9 +160,16 @@ void test_atlas_packing()
 
     atlasGraph.buildGraph();
 
+    int rootNodes = 0;
+    for (auto &node : atlasGraph)
+    {
+        rootNodes += node.parent == nullptr;
+    }
+
     auto memory = platform::windows::getMemoryUsage() / 1024 / 1024;
 
     fmt::println("{} files parsed in {}ms, memory: {}MB", atlasGraph.size(), timer.elapsedMiliseconds(), memory);
+    fmt::println("{} / {} root nodes", rootNodes, atlasGraph.size());
 }
 
 int main()

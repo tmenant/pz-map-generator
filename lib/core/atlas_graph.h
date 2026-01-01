@@ -26,15 +26,19 @@ private:
     std::deque<Node> nodes;
     std::unordered_map<uint32_t, Node *> nodesById;
 
+    using iterator = std::deque<Node>::const_iterator;
+
 public:
     AtlasGraph() = default;
 
     inline size_t size() const { return nodes.size(); }
+    inline iterator begin() const { return nodes.begin(); }
+    inline iterator end() const { return nodes.end(); }
 
     Node *getNodeById(uint32_t id);
     Node *getRootNode(Node *currentNode);
     Node *getRootNode(uint32_t childId);
 
-    void addNode(uint32_t id, Node&& atlasData);
+    void addNode(uint32_t id, Node &&atlasData);
     void buildGraph();
 };
