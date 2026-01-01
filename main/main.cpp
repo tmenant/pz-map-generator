@@ -16,7 +16,7 @@
 
 #include "TGUI/Widgets/Picture.hpp"
 #include "constants.h"
-#include "core/atlas_datas.h"
+#include "core/atlas_graph.h"
 #include "gui/views/cell_viewer/cell_viewer.h"
 #include "math/vector2i.h"
 #include "platform.h"
@@ -148,7 +148,7 @@ void test_atlas_packing()
 
         LotHeader header = LotHeader::read(path.string());
 
-        AtlasDatas atlasData;
+        AtlasGraph::Node atlasData;
 
         for (const auto &tilename : header.tileNames)
         {

@@ -1,11 +1,11 @@
-#include "core/atlas_datas.h"
+#include "core/atlas_graph.h"
 #include <doctest/doctest.h>
 #include <fmt/base.h>
 
 TEST_CASE("Atlas Datas contains")
 {
-    AtlasDatas atlas1;
-    AtlasDatas atlas2;
+    AtlasGraph::Node atlas1;
+    AtlasGraph::Node atlas2;
 
     SUBCASE("Simple subsequence")
     {
@@ -109,12 +109,12 @@ TEST_SUITE("Atlas Graph")
         */
         AtlasGraph graph;
 
-        graph.addNode(0, AtlasDatas({ 0, 1, 2, 3 }));
-        graph.addNode(1, AtlasDatas({ 0, 1, 2 }));
-        graph.addNode(2, AtlasDatas({ 2 }));
-        graph.addNode(3, AtlasDatas({ 0, 1 }));
-        graph.addNode(4, AtlasDatas({ 3 }));
-        graph.addNode(5, AtlasDatas({ 4 }));
+        graph.addNode(0, AtlasGraph::Node({ 0, 1, 2, 3 }));
+        graph.addNode(1, AtlasGraph::Node({ 0, 1, 2 }));
+        graph.addNode(2, AtlasGraph::Node({ 2 }));
+        graph.addNode(3, AtlasGraph::Node({ 0, 1 }));
+        graph.addNode(4, AtlasGraph::Node({ 3 }));
+        graph.addNode(5, AtlasGraph::Node({ 4 }));
         graph.buildGraph();
 
         CHECK(graph.getNodeById(0)->parent == nullptr);
@@ -142,10 +142,10 @@ TEST_SUITE("Atlas Graph")
         */
         AtlasGraph graph;
 
-        graph.addNode(0, AtlasDatas({ 0, 1, 2, 3 }));
-        graph.addNode(1, AtlasDatas({ 0, 1, 2 }));
-        graph.addNode(2, AtlasDatas({ 0, 1 }));
-        graph.addNode(3, AtlasDatas({ 0 }));
+        graph.addNode(0, AtlasGraph::Node({ 0, 1, 2, 3 }));
+        graph.addNode(1, AtlasGraph::Node({ 0, 1, 2 }));
+        graph.addNode(2, AtlasGraph::Node({ 0, 1 }));
+        graph.addNode(3, AtlasGraph::Node({ 0 }));
 
         graph.buildGraph();
 
@@ -169,12 +169,12 @@ TEST_SUITE("Atlas Graph")
         */
         AtlasGraph graph;
 
-        graph.addNode(0, AtlasDatas({ 0, 1, 2 }));
-        graph.addNode(1, AtlasDatas({ 0, 1 }));
-        graph.addNode(2, AtlasDatas({ 0 }));
+        graph.addNode(0, AtlasGraph::Node({ 0, 1, 2 }));
+        graph.addNode(1, AtlasGraph::Node({ 0, 1 }));
+        graph.addNode(2, AtlasGraph::Node({ 0 }));
 
-        graph.addNode(3, AtlasDatas({ 3, 4 }));
-        graph.addNode(4, AtlasDatas({ 3 }));
+        graph.addNode(3, AtlasGraph::Node({ 3, 4 }));
+        graph.addNode(4, AtlasGraph::Node({ 3 }));
 
         graph.buildGraph();
 
@@ -202,11 +202,11 @@ TEST_SUITE("Atlas Graph")
         */
         AtlasGraph graph;
 
-        graph.addNode(0, AtlasDatas({ 0, 1, 2, 3, 4 }));
-        graph.addNode(1, AtlasDatas({ 0, 1, 2 }));
-        graph.addNode(2, AtlasDatas({ 3, 4 }));
-        graph.addNode(3, AtlasDatas({ 0, 1 }));
-        graph.addNode(4, AtlasDatas({ 3 }));
+        graph.addNode(0, AtlasGraph::Node({ 0, 1, 2, 3, 4 }));
+        graph.addNode(1, AtlasGraph::Node({ 0, 1, 2 }));
+        graph.addNode(2, AtlasGraph::Node({ 3, 4 }));
+        graph.addNode(3, AtlasGraph::Node({ 0, 1 }));
+        graph.addNode(4, AtlasGraph::Node({ 3 }));
 
         graph.buildGraph();
 
@@ -230,9 +230,9 @@ TEST_SUITE("Atlas Graph")
         */
         AtlasGraph graph;
 
-        graph.addNode(0, AtlasDatas({ 0, 1 }));
-        graph.addNode(1, AtlasDatas({ 2, 3 }));
-        graph.addNode(2, AtlasDatas({ 4, 5 }));
+        graph.addNode(0, AtlasGraph::Node({ 0, 1 }));
+        graph.addNode(1, AtlasGraph::Node({ 2, 3 }));
+        graph.addNode(2, AtlasGraph::Node({ 4, 5 }));
 
         graph.buildGraph();
 
@@ -254,9 +254,9 @@ TEST_SUITE("Atlas Graph")
         */
         AtlasGraph graph;
 
-        graph.addNode(0, AtlasDatas({ 0, 1 }));
-        graph.addNode(1, AtlasDatas({ 0 }));
-        graph.addNode(2, AtlasDatas({ 9 }));
+        graph.addNode(0, AtlasGraph::Node({ 0, 1 }));
+        graph.addNode(1, AtlasGraph::Node({ 0 }));
+        graph.addNode(2, AtlasGraph::Node({ 9 }));
 
         graph.buildGraph();
 
