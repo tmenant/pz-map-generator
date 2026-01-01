@@ -155,7 +155,7 @@ void test_atlas_packing()
             atlasData.hashes.emplace_back(Math::hashFnv1a(tilename));
         }
 
-        atlasGraph.addNode(header.position.hashcode(), atlasData);
+        atlasGraph.addNode(header.position.hashcode(), std::move(atlasData));
     }
 
     atlasGraph.buildGraph();

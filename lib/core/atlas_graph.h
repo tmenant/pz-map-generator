@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <unordered_map>
 #include <vector>
 
@@ -22,17 +23,18 @@ public:
     };
 
 private:
-    std::unordered_map<uint32_t, Node> atlasNodes;
+    std::deque<Node> nodes;
+    std::unordered_map<uint32_t, Node *> nodesById;
 
 public:
     AtlasGraph() = default;
 
-    inline size_t size() const { return atlasNodes.size(); }
+    inline size_t size() const { return nodes.size(); }
 
     Node *getNodeById(uint32_t id);
     Node *getRootNode(Node *currentNode);
     Node *getRootNode(uint32_t childId);
 
-    void addNode(uint32_t id, Node atlasData);
+    void addNode(uint32_t id, Node&& atlasData);
     void buildGraph();
 };

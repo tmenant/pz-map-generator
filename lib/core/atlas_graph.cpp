@@ -35,14 +35,13 @@ bool AtlasGraph::Node::contains(Node *other) const
 
 AtlasGraph::Node *AtlasGraph::getNodeById(uint32_t id)
 {
-    auto it = atlasNodes.find(id);
-
-    if (it == atlasNodes.end())
+    auto it = nodesById.find(id);
+    if (it == nodesById.end())
     {
         throw std::runtime_error("id not found: " + std::to_string(id));
     }
 
-    return &it->second;
+    return it->second;
 }
 
 AtlasGraph::Node *AtlasGraph::getRootNode(Node *currentNode)
@@ -63,23 +62,24 @@ AtlasGraph::Node *AtlasGraph::getRootNode(uint32_t childId)
     return getRootNode(currentNode);
 }
 
-void AtlasGraph::addNode(uint32_t id, AtlasGraph::Node atlasData)
+void AtlasGraph::addNode(uint32_t id, AtlasGraph::Node &&atlasData)
 {
     std::sort(atlasData.hashes.begin(), atlasData.hashes.end());
-    atlasNodes[id] = atlasData;
+    nodes.emplace_back(std::move(atlasData));
+    nodesById[id] = &nodes.back();
 }
 
 void AtlasGraph::buildGraph()
 {
-    std::vector<AtlasGraph::Node *> nodes;
-    nodes.reserve(atlasNodes.size());
+    std::vector<AtlasGraph::Node *> sortedNodes;
+    sortedNodes.reserve(nodesById.size());
 
-    for (auto &[id, node] : atlasNodes)
+    for (auto &[id, node] : nodesById)
     {
-        nodes.push_back(&node);
+        sortedNodes.push_back(node);
     }
 
-    std::sort(nodes.begin(), nodes.end(), [](AtlasGraph::Node *a, AtlasGraph::Node *b)
+    std::sort(sortedNodes.begin(), sortedNodes.end(), [](AtlasGraph::Node *a, AtlasGraph::Node *b)
     {
         assert(a != nullptr);
         assert(b != nullptr);
@@ -87,17 +87,17 @@ void AtlasGraph::buildGraph()
         return a->hashes.size() < b->hashes.size();
     });
 
-    assert(nodes.size() > 1);
+    assert(sortedNodes.size() > 1);
 
-    for (int i = 0; i < nodes.size(); i++)
+    for (int i = 0; i < sortedNodes.size(); i++)
     {
-        for (int j = i + 1; j < nodes.size(); j++)
+        for (int j = i + 1; j < sortedNodes.size(); j++)
         {
-            assert(nodes[i]->hashes.size() <= nodes[j]->hashes.size());
+            assert(sortedNodes[i]->hashes.size() <= sortedNodes[j]->hashes.size());
 
-            if (nodes[j]->contains(nodes[i]))
+            if (sortedNodes[j]->contains(sortedNodes[i]))
             {
-                nodes[i]->parent = nodes[j];
+                sortedNodes[i]->parent = sortedNodes[j];
                 break;
             }
         }
