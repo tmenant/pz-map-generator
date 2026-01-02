@@ -23,6 +23,22 @@ TilesheetService::TilesheetService(std::string _gamePath, LoadingPayload &loadin
     readTexturePacks();
 }
 
+TexturePack::Texture *TilesheetService::getTextureByName(const std::string &textureName, TexturePack::Page *page)
+{
+    if (page == nullptr)
+        return nullptr;
+
+    for (auto &texture : page->textures)
+    {
+        if (texture.name == textureName)
+        {
+            return &texture;
+        }
+    }
+
+    return nullptr;
+}
+
 TexturePack::Texture *TilesheetService::getTextureByName(const std::string &textureName)
 {
     auto it = texturesByName.find(textureName);

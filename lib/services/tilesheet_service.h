@@ -23,6 +23,7 @@ public:
 
     TilesheetService(std::string _gamePath, LoadingPayload &loadingPayload);
 
+    TexturePack::Texture *getTextureByName(const std::string &textureName, TexturePack::Page *page);
     TexturePack::Texture *getTextureByName(const std::string &textureName);
     TexturePack::Page *getPageByTextureName(const std::string &textureName);
     TexturePack::Page *getPageByName(const std::string &name);

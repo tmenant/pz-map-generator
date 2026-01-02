@@ -1,9 +1,8 @@
 #pragma once
 
 #include "command_manager.h"
-#include "gui/views/window_tiles_browser.h"
+#include "gui/views/tiles_browser/window_tiles_browser.h"
 #include "gui/window_manager.h"
-
 
 class CmdTilesBrowser : public BaseCommand
 {
