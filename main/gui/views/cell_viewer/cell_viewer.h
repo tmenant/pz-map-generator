@@ -15,7 +15,6 @@
 #include "files/lotpack.h"
 #include "files/texturepack.h"
 #include "math/math.h"
-#include "services/map_files_service.h"
 #include "services/tilesheet_service.h"
 
 #include "gui/components/debug_panel.h"
@@ -46,10 +45,10 @@ private:
     LotHeader lotheader;
     Lotpack lotpack;
 
-    TilesheetService *tilesheetService;
+    TilesheetService *tilesheetService = nullptr;
 
     ViewState viewState;
-    sf::View *view;
+    sf::View *view = nullptr;
 
     sf::Texture atlasTexture;
     std::vector<sf::VertexArray> vertexArrays;
@@ -61,7 +60,7 @@ private:
     DebugPanel debugPanel;
 
 public:
-    CellViewer(sf::View *view, MapFilesService *mapFileService, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y);
+    CellViewer(sf::View *view, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y);
 
     void handleEvents(const sf::Event &event, sf::RenderWindow &window);
     void update(sf::RenderWindow &window);

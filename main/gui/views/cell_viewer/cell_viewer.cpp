@@ -25,13 +25,16 @@
 #include "gui/components/debug_panel.h"
 
 #include "constants.h"
+#include "services/map_files_service.h"
 #include "timer.h"
 
-CellViewer::CellViewer(sf::View *view, MapFilesService *mapFileService, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y) :
+CellViewer::CellViewer(sf::View *view, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y) :
         debugPanel(gui)
 {
-    this->lotheader = mapFileService->LoadLotheaderByPosition(x, y);
-    this->lotpack = mapFileService->LoadLotpackByPosition(x, y, &lotheader);
+    MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
+
+    this->lotheader = mapFileService.LoadLotheaderByPosition(x, y);
+    this->lotpack = mapFileService.LoadLotpackByPosition(x, y, &lotheader);
     this->tilesheetService = tilesheetService;
     this->view = view;
 
