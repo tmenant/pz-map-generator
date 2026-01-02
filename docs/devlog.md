@@ -163,9 +163,17 @@ By extending this recursively, I create a dependency graph where only the root n
 - need an extensible architecture
 - anticipating future dual mode: cli vs gui
 
+### Refactoring GUI Architecture
+- capability of creating multiple windows
+- extensible architecture
+- centralize common window behaviors
+- centralize loading thread handling
+- ability to run a window indepently, or to create / delete windows dynamically at runtime
+- separate window rendering logic from core logic
+
 ### Roadmap
 - [x] improving separation between cli and gui: allow to easily show tiles browser without separate executable
-- [ ] create a main gui architecture, allowing to create multiple windows from the main gui
+- [x] create a main gui architecture, allowing to create multiple windows from a main gui
 - [ ] implementing dynamic cells viewers
 - [ ] implementing automated extraction of buildings
 - [ ] implementing buildings viewer
