@@ -4,13 +4,13 @@
 #include "TGUI/Widgets/Picture.hpp"
 
 #include "app_context.h"
+#include "cell_viewer.h"
 #include "gui/app_window.h"
-#include "gui/views/cell_viewer/cell_viewer.h"
 #include "theme.h"
 #include <SFML/Window/VideoMode.hpp>
 #include <memory>
 
-class WindowCellViewer : public AppWindow
+class WindowMapViewer : public AppWindow
 {
 private:
     std::unique_ptr<CellViewer> cellViewer = nullptr;
@@ -27,7 +27,7 @@ private:
     }
 
 public:
-    WindowCellViewer(AppContext &_appContext) : AppWindow(_appContext, windowConfig())
+    WindowMapViewer(AppContext &_appContext) : AppWindow(_appContext, windowConfig())
     {
         loadingSpinner = tgui::Picture::create("ignore/spinner.png");
         loadingSpinner->setPosition("45%", "50%");

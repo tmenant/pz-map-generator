@@ -1,22 +1,22 @@
 #pragma once
 
 #include "command_manager.h"
-#include "gui/views/window_cell_viewer.h"
+#include "gui/views/map_viewer/window_map_viewer.h"
 #include "gui/window_manager.h"
 
-class CmdCellViewer : public BaseCommand
+class CmdMapViewer : public BaseCommand
 {
 public:
     CLI::App *registerCommand(CLI::App &app) override
     {
-        return app.add_subcommand("cell-viewer", "Open the cells viewer gui.");
+        return app.add_subcommand("map-viewer", "Open the map viewer gui.");
     }
 
     void executeCommand() override
     {
         WindowManager manager;
 
-        manager.createWindow<WindowCellViewer>();
+        manager.createWindow<WindowMapViewer>();
         manager.run();
     }
 };
