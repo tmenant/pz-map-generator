@@ -54,7 +54,7 @@ void Lotpack::readBlockSquares(const BytesBuffer &buffer, uint16_t blockIndex, s
 {
     int32_t skip = 0;
 
-    for (int8_t z = 0; z < header->maxLayer - header->minLayer; z++)
+    for (int8_t z = header->minLayer; z < header->maxLayer; z++)
     {
         if (skip >= constants::SQUARE_PER_BLOCK)
         {
@@ -90,7 +90,6 @@ void Lotpack::readBlockSquares(const BytesBuffer &buffer, uint16_t blockIndex, s
                 }
                 else if (count > 1)
                 {
-
                     SquareData squareData = Lotpack::readSquare(buffer, count - 1, offset);
                     squareData.coord = CellCoord(blockIndex, x, y, z);
 

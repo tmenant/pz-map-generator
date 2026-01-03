@@ -1,12 +1,9 @@
 #include "cell_viewer.h"
 
-#include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/VertexBuffer.hpp>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -15,37 +12,26 @@
 
 #include <fmt/base.h>
 
-#include "TGUI/Backend/SFML-Graphics.hpp"
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
-
 #include "algorithms/rect_pack/rect_structs.h"
 #include "algorithms/rect_pack/rectpack_2d.h"
 #include "files/texturepack.h"
-#include "gui/components/debug_panel.h"
 
 #include "constants.h"
 #include "services/map_files_service.h"
 #include "timer.h"
 
-CellViewer::CellViewer(sf::View *view, TilesheetService *tilesheetService, tgui::Gui &gui, int x, int y) :
-        debugPanel(gui)
+CellViewer::CellViewer(int x, int y, TilesheetService *tilesheetService)
 {
     MapFilesService mapFileService(constants::GAME_PATH, MapNames::Muldraugh);
 
-    this->lotheader = mapFileService.LoadLotheaderByPosition(x, y);
-    this->lotpack = mapFileService.LoadLotpackByPosition(x, y, &lotheader);
-    this->tilesheetService = tilesheetService;
-    this->view = view;
+    lotheader = mapFileService.LoadLotheaderByPosition(x, y);
+    lotpack = mapFileService.LoadLotpackByPosition(x, y, &lotheader);
 
-    this->viewState.currentLayer = lotheader.maxLayer;
-    this->viewState.center = { .0f, 128.f * 64 };
-
-    packCellSprites();
+    packCellSprites(tilesheetService);
     preComputeSprites();
 }
 
-void CellViewer::packCellSprites()
+void CellViewer::packCellSprites(TilesheetService *tilesheetService)
 {
     auto timer = Timer::start();
     auto tilesCount = lotheader.tileNames.size();
@@ -124,15 +110,11 @@ void CellViewer::packCellSprites()
 
 void CellViewer::preComputeSprites()
 {
-    const float TILE_WIDTH = 128.0f;
-    const float TILE_HEIGHT = 64.0f;
+    std::unordered_map<uint8_t, std::vector<sf::Vertex>> vertexArrays;
 
-    vertexArrays.clear();
-    vertexArrays.resize(lotheader.maxLayer - lotheader.minLayer);
-
-    for (int i = 0; i < vertexArrays.size(); i++)
+    for (int layer = lotheader.minLayer; layer < lotheader.maxLayer; layer++)
     {
-        vertexArrays[i] = sf::VertexArray(sf::PrimitiveType::Triangles);
+        vertexArrays[layer] = {};
     }
 
     for (auto &square : lotpack.squareMap)
@@ -140,12 +122,12 @@ void CellViewer::preComputeSprites()
         int chunkX = square.coord.chunk_idx() / constants::CELL_SIZE_IN_BLOCKS;
         int chunkY = square.coord.chunk_idx() % constants::CELL_SIZE_IN_BLOCKS;
 
-        int gx = square.coord.x() + chunkX * constants::BLOCK_SIZE_IN_SQUARE;
-        int gy = square.coord.y() + chunkY * constants::BLOCK_SIZE_IN_SQUARE;
+        int gx = square.coord.x() + chunkX * constants::BLOCK_SIZE_IN_SQUARE + lotheader.position.x * constants::CELL_SIZE_IN_SQUARE;
+        int gy = square.coord.y() + chunkY * constants::BLOCK_SIZE_IN_SQUARE + lotheader.position.y * constants::CELL_SIZE_IN_SQUARE;
         int gz = square.coord.z();
 
-        float screenX = (gx - gy) * (TILE_WIDTH / 2.0f);
-        float screenY = (gx + gy) * (TILE_HEIGHT / 2.0f) - gz * (TILE_HEIGHT * 3.0f);
+        float screenX = (gx - gy) * (constants::TILE_WIDTH / 2);
+        float screenY = (gx + gy) * (constants::TILE_HEIGHT / 2) - gz * (constants::TILE_HEIGHT * 3);
 
         for (int32_t &spriteId : square.tiles)
         {
@@ -188,99 +170,41 @@ void CellViewer::preComputeSprites()
             };
 
             // Triangle 1
-            vertexArrays[gz].append(v0);
-            vertexArrays[gz].append(v2);
-            vertexArrays[gz].append(v1);
+            vertexArrays[gz].push_back(v0);
+            vertexArrays[gz].push_back(v2);
+            vertexArrays[gz].push_back(v1);
 
             // Triangle 2
-            vertexArrays[gz].append(v1);
-            vertexArrays[gz].append(v2);
-            vertexArrays[gz].append(v3);
+            vertexArrays[gz].push_back(v1);
+            vertexArrays[gz].push_back(v2);
+            vertexArrays[gz].push_back(v3);
         }
+    }
+
+    vertexBuffers.clear();
+    vertexBuffers.reserve(lotheader.maxLayer - lotheader.minLayer);
+
+    for (int layer = lotheader.minLayer; layer < lotheader.maxLayer; layer++)
+    {
+        vertexBuffers[layer] = sf::VertexBuffer(sf::PrimitiveType::Triangles);
+
+        if (!vertexBuffers[layer].create(vertexArrays[layer].size())) continue;
+        if (!vertexBuffers[layer].update(vertexArrays[layer].data())) continue;
     }
 }
 
-void CellViewer::handleEvents(const sf::Event &event, sf::RenderWindow &window)
+int CellViewer::update(sf::RenderWindow &window, int currentLayer)
 {
-    if (const auto *mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>())
-    {
-        if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical)
-        {
-            float factor = (mouseWheel->delta > 0) ? 0.9f : 1.1f;
-
-            viewState.zoomLevel *= factor;
-            viewState.lastMousePos = sf::Vector2i(window.mapPixelToCoords(mouseWheel->position, *view));
-        }
-    }
-
-    if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonPressed>())
-    {
-        if (mouseButton->button == sf::Mouse::Button::Left)
-        {
-            viewState.isDragging = true;
-            viewState.lastMousePos = mouseButton->position;
-        }
-    }
-
-    if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonReleased>())
-    {
-        if (mouseButton->button == sf::Mouse::Button::Left)
-        {
-            viewState.isDragging = false;
-        }
-    }
-
-    if (const auto *mouseMove = event.getIf<sf::Event::MouseMoved>())
-    {
-        if (viewState.isDragging)
-        {
-            sf::Vector2f oldPos = window.mapPixelToCoords(viewState.lastMousePos, *view);
-            sf::Vector2f newPos = window.mapPixelToCoords(mouseMove->position, *view);
-
-            viewState.center += (oldPos - newPos);
-            viewState.lastMousePos = mouseMove->position;
-        }
-    }
-
-    if (const auto *keyPressed = event.getIf<sf::Event::KeyPressed>())
-    {
-        if (keyPressed->code == sf::Keyboard::Key::Up)
-        {
-            viewState.currentLayer = Math::fastMin(viewState.currentLayer + 1, lotheader.maxLayer - 1);
-        }
-        else if (keyPressed->code == sf::Keyboard::Key::Down)
-        {
-            viewState.currentLayer = Math::fastMax(viewState.currentLayer - 1, lotheader.minLayer);
-        }
-    }
-}
-
-void CellViewer::update(sf::RenderWindow &window)
-{
-    viewState.applyTo(*view, window);
-    window.setView(*view);
-
     int drawCalls = 0;
 
-    Timer timer = Timer::start();
-
-    for (int layer = 0; layer < (lotheader.maxLayer - lotheader.minLayer); layer++)
+    for (int layer = lotheader.minLayer; layer < lotheader.maxLayer; layer++)
     {
-        if (layer <= viewState.currentLayer)
+        if (layer <= currentLayer)
         {
-            window.draw(vertexArrays[layer], &atlasTexture);
+            window.draw(vertexBuffers[layer], &atlasTexture);
             drawCalls++;
         }
     }
 
-    if (viewState.clock.getElapsedTime() > sf::milliseconds(750))
-    {
-        debugPanel.setFPS(1000 / timer.elapsedMiliseconds());
-        debugPanel.setTimer(timer.elapsedMiliseconds());
-        debugPanel.setDrawCalls(drawCalls);
-
-        viewState.clock.restart();
-    }
-
-    viewState.firstFrame = false;
+    return drawCalls;
 }

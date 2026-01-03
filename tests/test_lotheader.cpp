@@ -35,6 +35,8 @@ TEST_CASE("Muldraugh lotheaders B42")
             CHECK_EQ(header.version, 1);
             CHECK_EQ(header.position.x, 0);
             CHECK_EQ(header.position.y, 0);
+            CHECK_EQ(header.width, 8);
+            CHECK_EQ(header.height, 8);
         }
     }
 }

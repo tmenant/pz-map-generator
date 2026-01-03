@@ -31,6 +31,7 @@ public:
     inline bool isOpen() const { return window.isOpen(); }
 
     virtual void handleEvents(const sf::Event &event) {}
+    virtual void ready() {}
     virtual void update();
     virtual void render();
 

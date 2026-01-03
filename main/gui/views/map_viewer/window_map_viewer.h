@@ -1,22 +1,44 @@
 #pragma once
 
-#include "TGUI/Widgets/Label.hpp"
-#include "TGUI/Widgets/Picture.hpp"
-
 #include "app_context.h"
 #include "cell_viewer.h"
 #include "gui/app_window.h"
-#include "theme.h"
+#include "gui/components/debug_panel.h"
+#include "gui/components/loading_spinner.h"
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <memory>
+#include <vector>
 
 class WindowMapViewer : public AppWindow
 {
 private:
-    std::unique_ptr<CellViewer> cellViewer = nullptr;
+    struct ViewState
+    {
+        sf::Clock clock;
+        sf::Vector2i lastMousePos;
+        sf::Vector2f center;
+        sf::Vector2i currentCell = { 31, 45 };
 
-    tgui::Label::Ptr loadingLabel = nullptr;
-    tgui::Picture::Ptr loadingSpinner = nullptr;
+        float zoomLevel = 10.0f;
+        bool initialized = false;
+        bool isDragging = false;
+        bool firstFrame = true;
+
+        int cellsDisplayRange = 3;
+        int currentLayer = 32;
+        int maxLayer = 32;
+        int minLayer = -32;
+
+        void applyTo(sf::View &view, sf::RenderWindow &window);
+    };
+
+    ViewState viewState;
+
+    std::unique_ptr<DebugPanel> debugPanel = nullptr;
+    std::unique_ptr<LoadingSpinner> loadingSpinner = nullptr;
+
+    std::vector<std::unique_ptr<CellViewer>> cellViewers;
 
     static WindowConfig windowConfig()
     {
@@ -27,49 +49,13 @@ private:
     }
 
 public:
-    WindowMapViewer(AppContext &_appContext) : AppWindow(_appContext, windowConfig())
-    {
-        loadingSpinner = tgui::Picture::create("ignore/spinner.png");
-        loadingSpinner->setPosition("45%", "50%");
-        loadingSpinner->setOrigin(0.5f, 0.5f);
-        loadingSpinner->setSize(20, 20);
+    WindowMapViewer(AppContext &_appContext);
 
-        loadingLabel = tgui::Label::create("Loading...");
-        loadingLabel->setPosition("50%", "50%");
-        loadingLabel->setOrigin(0.5f, 0.5f);
-        loadingLabel->getRenderer()->setTextColor(Colors::fontColor.tgui());
+    void handleEvents(const sf::Event &event) override;
+    void ready() override;
+    void update() override;
 
-        gui.add(loadingSpinner);
-        gui.add(loadingLabel);
-    }
-
-    void handleEvents(const sf::Event &event) override
-    {
-        if (cellViewer != nullptr)
-        {
-            cellViewer->handleEvents(event, window);
-        }
-    }
-
-    void update() override
-    {
-        AppWindow::update();
-
-        if (appContext.isLoaded && cellViewer == nullptr)
-        {
-            cellViewer = std::make_unique<CellViewer>(&view, appContext.tilesheetService.get(), gui, 31, 45);
-
-            gui.remove(loadingLabel);
-            gui.remove(loadingSpinner);
-        }
-        else if (appContext.isLoaded)
-        {
-            cellViewer->update(window);
-        }
-        else
-        {
-            loadingLabel->setText(appContext.loadingPayload.getMessage());
-            loadingSpinner->setRotation(loadingSpinner->getRotation() + 5);
-        }
-    }
+    void createCells();
+    void updateCells();
+    void drawDebugGrid(int displayRange);
 };

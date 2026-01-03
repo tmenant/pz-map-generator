@@ -4,6 +4,9 @@
 
 namespace constants
 {
+    constexpr float TILE_WIDTH = 128.0f;
+    constexpr float TILE_HEIGHT = 64.0f;
+
     constexpr int MIN_LAYER = -32;
     constexpr int MAX_LAYER = 32;
     constexpr int MAX_CELLS_SIZE = 1024;
@@ -12,6 +15,7 @@ namespace constants
     constexpr int SQUARE_PER_BLOCK = BLOCK_SIZE_IN_SQUARE * BLOCK_SIZE_IN_SQUARE;
 
     constexpr int CELL_SIZE_IN_BLOCKS = 32;
+    constexpr int CELL_SIZE_IN_SQUARE = CELL_SIZE_IN_BLOCKS * BLOCK_SIZE_IN_SQUARE;
     constexpr int BLOCKS_PER_CELL = CELL_SIZE_IN_BLOCKS * CELL_SIZE_IN_BLOCKS;
 
     constexpr char LINE_END = 0xA;

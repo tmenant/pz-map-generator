@@ -35,7 +35,7 @@ private:
 public:
     WindowTilesBrowser(AppContext &_appContext);
 
-    void ready();
+    void ready() override;
     void update() override;
 
     void updateWindow();
